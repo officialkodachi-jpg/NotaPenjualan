@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nota Pembelian — Kodachi Shop</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --surface: #1a1a1a;
+    --surface2: #242424;
+    --border: #2e2e2e;
+    --accent: #e8c840;
+    --accent2: #4ade80;
+    --danger: #f87171;
+    --text: #f0f0f0;
+    --muted: #888;
+    --font-mono: 'IBM Plex Mono', monospace;
+    --font-sans: 'IBM Plex Sans', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-sans); min-height: 100vh; font-size: 14px; }
+
+  /* HEADER */
+  .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .header-logo { font-family: var(--font-mono); font-weight: 600; font-size: 13px; color: var(--accent); letter-spacing: 0.08em; }
+  .header-right { display: flex; align-items: center; gap: 8px; }
+  .sync-status { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+  .sync-status.ok { color: var(--accent2); }
+  .sync-status.pending { color: var(--accent); }
+  .sync-status.error { color: var(--danger); }
+
+  /* MAIN LAYOUT */
+  .main { max-width: 720px; margin: 0 auto; padding: 16px; }
+
+  /* NOTA INFO BAR */
+  .nota-bar { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-bottom: 12px; align-items: center; }
+  .nota-id { font-family: var(--font-mono); font-size: 12px; color: var(--accent); }
+  .nota-meta { font-family: var(--font-mono); font-size: 11px; color: var(--muted); text-align: right; }
+
+  /* KASIR + TANGGAL */
+  .top-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  
+  /* SECTION */
+  .section { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 10px; overflow: hidden; }
+  .section-head { padding: 8px 12px; background: var(--surface2); font-family: var(--font-mono); font-size: 11px; color: var(--muted); letter-spacing: 0.06em; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .section-body { padding: 10px 12px; }
+
+  /* INPUTS */
+  label { display: block; font-family: var(--font-mono); font-size: 10px; color: var(--muted); letter-spacing: 0.05em; margin-bottom: 4px; }
+  input, select, textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-family: var(--font-sans); font-size: 14px; padding: 8px 10px; border-radius: 4px; outline: none; transition: border-color 0.15s; }
+  input:focus, select:focus { border-color: var(--accent); }
+  select option { background: var(--surface2); }
+
+  /* AUTOCOMPLETE */
+  .ac-wrap { position: relative; }
+  .ac-list { position: absolute; top: 100%; left: 0; right: 0; background: #1e1e1e; border: 1px solid var(--accent); border-top: none; border-radius: 0 0 6px 6px; max-height: 220px; overflow-y: auto; z-index: 200; }
+  .ac-item { padding: 8px 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+  .ac-item:hover, .ac-item.active { background: var(--surface2); }
+  .ac-item-name { font-size: 13px; }
+  .ac-item-price { font-family: var(--font-mono); font-size: 12px; color: var(--accent); }
+  .ac-list::-webkit-scrollbar { width: 4px; }
+  .ac-list::-webkit-scrollbar-thumb { background: var(--border); }
+
+  /* ITEM ROWS */
+  .item-row { display: grid; grid-template-columns: 1fr 70px 80px 90px 28px; gap: 6px; align-items: center; margin-bottom: 6px; }
+  .item-row input[type="number"] { text-align: center; }
+  .item-row .subtotal { font-family: var(--font-mono); font-size: 12px; color: var(--accent); text-align: right; padding: 8px 4px; }
+  .btn-rm { background: none; border: 1px solid var(--border); color: var(--muted); cursor: pointer; width: 28px; height: 35px; border-radius: 4px; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: all 0.1s; }
+  .btn-rm:hover { border-color: var(--danger); color: var(--danger); }
+  .col-headers { display: grid; grid-template-columns: 1fr 70px 80px 90px 28px; gap: 6px; margin-bottom: 4px; }
+  .col-headers span { font-family: var(--font-mono); font-size: 10px; color: var(--muted); letter-spacing: 0.04em; }
+  .col-headers span:nth-child(2), .col-headers span:nth-child(3) { text-align: center; }
+  .col-headers span:nth-child(4) { text-align: right; }
+
+  /* DETAIL/SIZE FIELD */
+  .item-detail-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .item-detail-row:last-child { border-bottom: none; margin-bottom: 0; }
+
+  /* PAYMENT */
+  .payment-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .pay-btn { padding: 10px; background: var(--surface2); border: 1px solid var(--border); color: var(--muted); font-family: var(--font-mono); font-size: 12px; border-radius: 4px; cursor: pointer; transition: all 0.15s; text-align: center; }
+  .pay-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .pay-btn.selected { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 600; }
+
+  /* TOTALS */
+  .totals { font-family: var(--font-mono); }
+  .total-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .total-row:last-child { border-bottom: none; }
+  .total-row.big { font-size: 16px; font-weight: 600; color: var(--accent); padding-top: 8px; }
+  .total-row.kembalian { color: var(--accent2); }
+  .total-row.minus { color: var(--danger); }
+
+  /* BUTTONS */
+  .action-bar { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 12px; }
+  .btn { padding: 12px; border: none; border-radius: 4px; font-family: var(--font-mono); font-size: 12px; font-weight: 600; cursor: pointer; letter-spacing: 0.04em; transition: all 0.15s; }
+  .btn-primary { background: var(--accent); color: #000; }
+  .btn-primary:hover { background: #f0d060; }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-danger { background: var(--surface2); color: var(--danger); border: 1px solid var(--danger); }
+  .btn-danger:hover { background: var(--danger); color: #000; }
+  .btn-sync { background: var(--surface2); color: var(--accent2); border: 1px solid var(--accent2); }
+  .btn-sync:hover { background: var(--accent2); color: #000; }
+
+  /* ADD ITEM */
+  .btn-add-item { width: 100%; padding: 8px; background: none; border: 1px dashed var(--border); color: var(--muted); font-family: var(--font-mono); font-size: 11px; border-radius: 4px; cursor: pointer; transition: all 0.15s; margin-top: 8px; }
+  .btn-add-item:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* MODE TABS */
+  .mode-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-bottom: 12px; }
+  .mode-tab { padding: 8px; text-align: center; background: var(--surface); border: 1px solid var(--border); color: var(--muted); font-family: var(--font-mono); font-size: 11px; border-radius: 4px; cursor: pointer; transition: all 0.15s; }
+  .mode-tab.active { background: var(--surface2); border-color: var(--accent); color: var(--accent); }
+
+  /* PENDING SYNC LIST */
+  .pending-list { font-family: var(--font-mono); font-size: 11px; }
+  .pending-item { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border); color: var(--muted); }
+  .pending-item .nota-no { color: var(--text); }
+  .pending-item .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); display: inline-block; margin-right: 4px; }
+  .pending-item .status-dot.synced { background: var(--accent2); }
+
+  /* MODAL */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 500; display: flex; align-items: center; justify-content: center; padding: 16px; }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; width: 100%; max-width: 380px; padding: 20px; }
+  .modal h3 { font-family: var(--font-mono); font-size: 13px; color: var(--accent); margin-bottom: 16px; }
+  .modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px; }
+  .hidden { display: none !important; }
+
+  /* PRINT NOTA */
+  .print-nota { font-family: var(--font-mono); font-size: 12px; line-height: 1.6; }
+  .print-nota .divider { border-top: 1px dashed var(--border); margin: 8px 0; }
+  .print-nota .center { text-align: center; }
+  .print-nota .row { display: flex; justify-content: space-between; }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 16px; right: 16px; background: var(--surface2); border: 1px solid var(--accent2); color: var(--accent2); font-family: var(--font-mono); font-size: 12px; padding: 10px 16px; border-radius: 4px; z-index: 999; animation: fadeIn 0.2s; }
+  .toast.error { border-color: var(--danger); color: var(--danger); }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  @media (max-width: 480px) {
+    .top-fields { grid-template-columns: 1fr; }
+    .action-bar { grid-template-columns: 1fr 1fr; }
+    .item-row { grid-template-columns: 1fr 55px 70px 80px 28px; }
+  }
+  @media print {
+    body * { visibility: hidden; }
+    #print-area, #print-area * { visibility: visible; }
+    #print-area { position: fixed; top: 0; left: 0; width: 80mm; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">⚡ KODACHI NOTA</div>
+  <div class="header-right">
+    <span class="sync-status" id="syncStatus">● OFFLINE</span>
+    <button class="btn btn-sync" style="padding:6px 12px;font-size:11px;" onclick="syncNow()">SYNC</button>
+    <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="showPending()">LOG</button>
+  </div>
+</div>
+
+<div class="main">
+  <!-- MODE -->
+  <div class="mode-tabs">
+    <div class="mode-tab active" onclick="setMode('jual')" id="tab-jual">🛒 JUAL</div>
+    <div class="mode-tab" onclick="setMode('aktual')" id="tab-aktual">📋 AKTUAL</div>
+    <div class="mode-tab" onclick="setMode('uang')" id="tab-uang">💰 UANG</div>
+  </div>
+
+  <!-- NOTA BAR -->
+  <div class="nota-bar">
+    <div class="nota-id" id="notaId">NT...</div>
+    <div class="nota-meta" id="notaMeta"></div>
+  </div>
+
+  <!-- TOP FIELDS -->
+  <div class="top-fields">
+    <div>
+      <label>KASIR</label>
+      <select id="kasir">
+        <option>Alya</option>
+        <option>Lina</option>
+        <option>Owner</option>
+        <option>Lainnya</option>
+      </select>
+    </div>
+    <div>
+      <label>SALDO AWAL (Rp)</label>
+      <input type="number" id="saldoAwal" placeholder="0" value="0">
+    </div>
+  </div>
+
+  <!-- MODE: JUAL -->
+  <div id="modeJual">
+    <!-- ITEMS -->
+    <div class="section">
+      <div class="section-head">
+        <span>BARANG</span>
+        <span id="itemCount">0 item</span>
+      </div>
+      <div class="section-body">
+        <div class="col-headers">
+          <span>PRODUK</span><span>SIZE</span><span>QTY</span><span>SUBTOTAL</span><span></span>
+        </div>
+        <div id="itemsContainer"></div>
+        <button class="btn-add-item" onclick="addItem()">+ TAMBAH BARANG</button>
+      </div>
+    </div>
+
+    <!-- PAYMENT -->
+    <div class="section">
+      <div class="section-head">PEMBAYARAN</div>
+      <div class="section-body">
+        <div class="payment-grid" style="margin-bottom:10px;">
+          <div class="pay-btn selected" onclick="selectPayment('CASH')" id="pay-CASH">CASH</div>
+          <div class="pay-btn" onclick="selectPayment('QRIS')" id="pay-QRIS">QRIS</div>
+          <div class="pay-btn" onclick="selectPayment('EDC')" id="pay-EDC">EDC BCA</div>
+          <div class="pay-btn" onclick="selectPayment('EDC Non BCA')" id="pay-EDC Non BCA">EDC NON-BCA</div>
+          <div class="pay-btn" onclick="selectPayment('Transfer')" id="pay-Transfer">TRANSFER</div>
+          <div class="pay-btn" onclick="selectPayment('Shopee')" id="pay-Shopee">SHOPEE</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div>
+            <label>UANG BAYAR (Rp)</label>
+            <input type="number" id="uangBayar" placeholder="0" oninput="calcChange()">
+          </div>
+          <div>
+            <label>DISKON (Rp)</label>
+            <input type="number" id="diskon" placeholder="0" value="0" oninput="calcTotals()">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOTALS -->
+    <div class="section">
+      <div class="section-head">RINGKASAN</div>
+      <div class="section-body">
+        <div class="totals">
+          <div class="total-row"><span>Total Produk</span><span id="ttlProduk">Rp 0</span></div>
+          <div class="total-row"><span>Diskon</span><span id="ttlDiskon" style="color:var(--danger)">- Rp 0</span></div>
+          <div class="total-row big"><span>TOTAL BAYAR</span><span id="ttlBayar">Rp 0</span></div>
+          <div class="total-row kembalian"><span>KEMBALIAN</span><span id="ttlKembali">Rp 0</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODE: AKTUAL -->
+  <div id="modeAktual" class="hidden">
+    <div class="section">
+      <div class="section-head">INPUT AKTUAL</div>
+      <div class="section-body">
+        <div style="margin-bottom:8px;">
+          <label>KETERANGAN AKTUAL</label>
+          <input type="text" id="aktualKet" placeholder="Catatan aktual...">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div>
+            <label>SALDO AWAL (Rp)</label>
+            <input type="number" id="aktualSaldoAwal" placeholder="0" value="0">
+          </div>
+          <div>
+            <label>SALDO AKHIR (Rp)</label>
+            <input type="number" id="aktualSaldoAkhir" placeholder="0" value="0">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODE: UANG -->
+  <div id="modeUang" class="hidden">
+    <div class="section">
+      <div class="section-head">UANG MASUK / KELUAR</div>
+      <div class="section-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+          <div class="pay-btn selected" onclick="setUangType('masuk')" id="utype-masuk">💚 MASUK</div>
+          <div class="pay-btn" onclick="setUangType('keluar')" id="utype-keluar">🔴 KELUAR</div>
+        </div>
+        <div style="margin-bottom:8px;">
+          <label>KETERANGAN</label>
+          <input type="text" id="uangKet" placeholder="misal: uang masuk titipan, uang keluar belanja...">
+        </div>
+        <div>
+          <label>JUMLAH (Rp)</label>
+          <input type="number" id="uangJumlah" placeholder="0">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="action-bar">
+    <button class="btn btn-danger" onclick="resetNota()">↺ RESET</button>
+    <button class="btn btn-secondary" onclick="printNota()">🖨 PRINT</button>
+    <button class="btn btn-primary" onclick="submitNota()">✓ SIMPAN</button>
+  </div>
+</div>
+
+<!-- MODAL PENDING LOG -->
+<div class="modal-overlay hidden" id="modalPending">
+  <div class="modal">
+    <h3>LOG NOTA (localStorage)</h3>
+    <div id="pendingList" class="pending-list"></div>
+    <div class="modal-actions">
+      <button class="btn btn-sync" onclick="syncNow()">SYNC SEMUA</button>
+      <button class="btn btn-secondary" onclick="closePending()">TUTUP</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PRINT -->
+<div class="modal-overlay hidden" id="modalPrint">
+  <div class="modal" style="max-width:320px;">
+    <h3>PREVIEW NOTA</h3>
+    <div id="print-area" class="print-nota"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="window.print()">🖨 PRINT</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('modalPrint').classList.add('hidden')">TUTUP</button>
+    </div>
+  </div>
+</div>
+
+<div id="toastEl" class="toast hidden"></div>
+
+<script>
+// ─── PRODUCT DATA ───────────────────────────────────────────────
+const PRODUCTS = [
+  {n:"8111 Stripe",h:115000},{n:"8111 A",h:125000},{n:"8111 Hitam",h:125000},{n:"8111 H/P",h:125000},{n:"8111 H/H",h:125000},{n:"8111 R1",h:125000},{n:"8111 R2",h:125000},{n:"8111 R3",h:125000},{n:"8111 Monaco Checker Heel",h:125000},{n:"8111 P/Monaco",h:125000},{n:"8111 Brown A",h:160000},{n:"8111 Brown B",h:160000},{n:"8111 Brown C",h:160000},{n:"8111 H/P Double Black",h:125000},
+  {n:"8116 Kuning Biru",h:115000},{n:"8116 Merah Biru",h:115000},{n:"8116 Merah Silver",h:115000},{n:"8116 Biru Silver",h:115000},{n:"8116 Hitam Putih",h:125000},{n:"8116 Hitam Silver",h:125000},{n:"8116 PH (Putih Hitam)",h:125000},{n:"8116 PDB (Putih Double Black)",h:125000},{n:"8116 Grey Double Black",h:125000},{n:"8116 Hitam Putih Double Black",h:125000},
+  {n:"K2428 All White",h:255000},{n:"K2428 All Black",h:255000},{n:"K2428 Hitam/Putih",h:255000},{n:"K2428 Biru/Coklat",h:255000},{n:"K2428 Hijau/Abu",h:255000},
+  {n:"8112 Double Navy",h:125000},{n:"8112 Hitam",h:125000},
+  {n:"8118 KB",h:125000},{n:"8118 BS",h:125000},{n:"8118 MB",h:125000},{n:"8118 MS",h:125000},
+  {n:"8115 Kuning",h:115000},{n:"8115 Merah",h:115000},{n:"8115 Putih",h:115000},{n:"8115 Biru",h:115000},{n:"8115 Hitam",h:119000},{n:"8115 Silver",h:119000},
+  {n:"8172 HC",h:130000},{n:"8172 HP",h:130000},{n:"8172 PNM",h:130000},{n:"8172 PHj/M",h:130000},{n:"8172 NP",h:130000},{n:"8172 KHj",h:130000},{n:"8172 HO",h:130000},{n:"8172 OHj",h:130000},{n:"8172 Hijau Army",h:130000},{n:"8172 PO",h:130000},{n:"8172 KH",h:130000},{n:"8172 PH",h:130000},{n:"8172 MP",h:130000},{n:"8172 Ash Grey",h:130000},{n:"8172 PHM",h:130000},{n:"8172 P/Rose Gold",h:130000},{n:"8172 Putih",h:130000},{n:"8172 HC Double Black",h:130000},{n:"8172 HP Double Black",h:130000},{n:"8172 MP (alas merah)",h:130000},{n:"8172 HH All Black",h:130000},{n:"8172 HjK - Hijau Kuning",h:130000},
+  {n:"8178 PO",h:126000},
+  {n:"8175 Biru",h:126000},{n:"8175 Orange HBK",h:126000},{n:"8175 Olive Green",h:126000},{n:"8175 Abu",h:126000},{n:"8175 Kuning",h:126000},
+  {n:"Chicago High Hitam Putih",h:199000},
+  {n:"8136 Hitam",h:180000},{n:"8136 Hitam/Cream",h:180000},{n:"8136 Hijau/Cream",h:180000},{n:"8136 Putih",h:180000},{n:"8136 Tosca/Cream",h:180000},
+  {n:"AR Plus Speed France Navy",h:245000},{n:"AR Plus Putih Biru",h:245000},{n:"AR Plus Putih Hitam",h:245000},{n:"AR Plus Putih Merah",h:245000},{n:"AR Plus Speed Monaco Navy",h:245000},{n:"AR Plus Provence P/BBM",h:245000},{n:"AR Plus Speed Putih/France",h:245000},{n:"AR Plus Provence Navy",h:245000},{n:"AR Provence BBM",h:184000},{n:"AR Plus Provence BBM",h:245000},{n:"AR Plus Provence Hitam/Hitam",h:245000},{n:"AR Plus Provence P/HHH",h:245000},{n:"AR Plus Speed Monaco Navy Sol Hitam",h:245000},
+  {n:"Astoria P/BBM",h:260000},{n:"Astoria HP",h:260000},
+  {n:"Galaxy Putih Hitam",h:188000},{n:"Galaxy Putih Merah Biru",h:188000},{n:"Galaxy Hitam Orange",h:188000},{n:"Galaxy Kuning Hijau",h:188000},{n:"Galaxy Hitam Emas",h:188000},{n:"Galaxy Hitam Putih",h:188000},{n:"Galaxy All Black",h:188000},{n:"Galaxy Putih Kuning Biru",h:188000},{n:"Galaxy Putih SIlver Merah",h:188000},{n:"Galaxy Putih Silver Biru",h:188000},{n:"Galaxy All White",h:188000},{n:"Galaxy Kuning Hitam",h:188000},{n:"Galaxy Hijau Kuning",h:188000},
+  {n:"Riviera Hitam Putih",h:180000},{n:"Riviera Hitam Hitam",h:180000},{n:"Riviera Hitam Coklat",h:180000},{n:"Riviera Maroon",h:180000},{n:"Riviera Grey",h:180000},{n:"Riviera Navy",h:180000},{n:"Riviera Putih",h:180000},
+  {n:"New Yorker High Cream/Hitam",h:245000},{n:"New Yorker High Hitam/Cream Waterproof",h:253000},{n:"New Yorker Low Cream/Hitam",h:235000},{n:"New Yorker Low Hitam/Cream Waterproof",h:242000},
+  {n:"Kodachi Max Hitam/Cream",h:215000},{n:"Kodachi Max Navy/Putih",h:215000},{n:"Kodachi Max Abu/Putih",h:215000},{n:"Kodachi Max Maroon/Cream",h:215000},{n:"Kodachi Max Hitam/Merah",h:215000},{n:"Kodachi Max All White",h:215000},{n:"Kodachi Max All Black",h:215000},{n:"Kodachi Max PMB",h:215000},{n:"Kodachi Max Merah Putih",h:215000},
+  {n:"Kodachi University High Hitam Putih",h:130000},{n:"Kodachi University Low Hitam Putih",h:125000},{n:"Kodachi University Low Grey",h:130000},{n:"Kodachi University Low Hijau Army",h:130000},{n:"Kodachi University Low Putih",h:130000},{n:"Kodachi University High Hitam Hitam",h:130000},{n:"Kodachi University Low Hitam Hitam",h:130000},
+  {n:"Kodachi Matrix Hitam",h:180000},{n:"Kodachi Matrix Putih",h:180000},
+  {n:"Alpha Black Grey",h:160000},{n:"Alpha Putih Biru",h:160000},{n:"Alpha Putih Navy",h:160000},
+  {n:"Classic HC BW",h:140000},{n:"Classic LC BW",h:140000},
+  {n:"Sparta HC New BBW",h:140000},{n:"Sparta HC BW",h:140000},{n:"Sparta HC All Black",h:140000},{n:"Sparta HC Putih",h:140000},{n:"Sparta LC BW",h:140000},{n:"Sparta LC All Black",h:140000},{n:"Sparta LC Putih",h:140000},{n:"Sparta LC New BBW",h:140000},
+  {n:"Slip On Arthur Hitam Putih",h:180000},{n:"Slip On Arthur Hitam",h:180000},{n:"Slip On Arthur Putih",h:180000},
+  {n:"Athena HC Black White",h:179900},{n:"Athena HC Putih",h:179900},{n:"Athena LC Black White",h:179900},
+  {n:"Sparta Gum High Black",h:170000},{n:"Sparta Gum High White",h:170000},{n:"Sparta Gum Low Black",h:170000},
+  {n:"Venus LC Putih",h:168000},{n:"Venus LC BW",h:168000},
+  {n:"Warrior Sport Style Black",h:399000},{n:"Warrior Sport Style Grey",h:399000},{n:"Warrior Sport Style Beige",h:399000},{n:"Warrior Running All Black",h:399000},{n:"Warrior Running Grey",h:399000},{n:"Warrior Running Cream",h:399000},
+  {n:"Ventela 70's High Navy",h:290000},{n:"Ventela 70's High B/Nat",h:290000},{n:"Ventela 70's High Black Gum",h:290000},{n:"Ventela 70's High Grey",h:290000},{n:"Ventela 70's High Putih",h:290000},{n:"Ventela 70's High Army Green",h:290000},{n:"Ventela 70's High Cream",h:290000},{n:"Ventela 70's Low Navy",h:280000},{n:"Ventela 70's Low B/Nat",h:280000},{n:"Ventela 70's Low Cream",h:280000},{n:"Ventela 70's Low Green",h:280000},
+  {n:"Ventela Public High White",h:295000},{n:"Ventela Public High B/Nat",h:295000},{n:"Ventela Public High Cream",h:295000},{n:"Ventela Public High Dark Yellow",h:295000},{n:"Ventela Public High Maroon",h:150000},{n:"Ventela Public High Navy",h:295000},{n:"Ventela Public Low Cream",h:288000},{n:"Ventela Public Low All Black",h:288000},{n:"Ventela Public Low B/Nat",h:288000},{n:"Ventela Public Low White",h:288000},{n:"Ventela Public Low Dark Yellow",h:288000},{n:"Ventela Public Low Maroon",h:150000},{n:"Ventela Public Low Navy",h:288000},{n:"Ventela Public Low Grey",h:288000},
+  {n:"Ventela Leaving A Legacy Low BW",h:398000},{n:"Ventela Sang Sekerta High Lohita",h:398000},
+  {n:"Ventela Basic Low BNat",h:230000},{n:"Ventela Basic Low All Black",h:230000},{n:"Ventela Basic High B/Nat",h:240000},{n:"Ventela Basic Low All White",h:240000},{n:"Ventela Basic High All Black",h:240000},
+  // Kaos kaki
+  {n:"Kaos kaki Pendek Putih",h:15000},{n:"Kaos kaki Pendek Hitam PP",h:15000},{n:"Kaos kaki Pendek Kuning Polos",h:15000},{n:"Kaos kaki Pendek",h:15000},
+  {n:"Kaos kaki panjang Hitam PPP",h:20000},{n:"Kaos kaki panjang",h:20000},
+];
+
+// ─── STATE ───────────────────────────────────────────────────────
+let mode = 'jual';
+let currentPayment = 'CASH';
+let uangType = 'masuk';
+let items = [];
+let itemCounter = 0;
+// GANTI URL INI dengan Apps Script Web App URL kamu:
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
+
+// ─── INIT ─────────────────────────────────────────────────────────
+function init() {
+  generateNotaId();
+  updateMeta();
+  addItem();
+  updateSyncStatus();
+}
+
+function generateNotaId() {
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  const id = `NT${String(now.getFullYear()).slice(2)}${pad(now.getMonth()+1)}${pad(now.getDate())}${pad(now.getHours())}${pad(now.getMinutes())}`;
+  document.getElementById('notaId').textContent = id;
+  return id;
+}
+
+function updateMeta() {
+  const now = new Date();
+  const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
+  document.getElementById('notaMeta').textContent = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+}
+
+// ─── MODE ─────────────────────────────────────────────────────────
+function setMode(m) {
+  mode = m;
+  ['jual','aktual','uang'].forEach(x => {
+    document.getElementById(`tab-${x}`).classList.toggle('active', x === m);
+    document.getElementById(`mode${x.charAt(0).toUpperCase()+x.slice(1)}`).classList.toggle('hidden', x !== m);
+  });
+}
+
+// ─── ITEMS ───────────────────────────────────────────────────────
+function addItem() {
+  const id = itemCounter++;
+  items.push({ id, name:'', size:'', qty:1, price:0 });
+  renderItems();
+}
+
+function removeItem(id) {
+  items = items.filter(i => i.id !== id);
+  renderItems();
+  calcTotals();
+}
+
+function renderItems() {
+  const c = document.getElementById('itemsContainer');
+  c.innerHTML = '';
+  items.forEach(item => {
+    const div = document.createElement('div');
+    div.innerHTML = `
+      <div class="item-detail-row">
+        <div class="ac-wrap">
+          <label>PRODUK</label>
+          <input type="text" id="name-${item.id}" value="${item.name}" placeholder="Cari produk..." 
+            oninput="filterProducts(${item.id}, this.value)" onblur="hideAC(${item.id})" autocomplete="off">
+          <div class="ac-list hidden" id="ac-${item.id}"></div>
+        </div>
+        <div>
+          <label>HARGA (Rp)</label>
+          <input type="number" id="price-${item.id}" value="${item.price}" oninput="updateItem(${item.id},'price',this.value)">
+        </div>
+      </div>
+      <div class="item-row">
+        <div style="font-size:12px;color:var(--muted);font-family:var(--font-mono);padding:8px 0;" id="nameLabel-${item.id}">${item.name || '—'}</div>
+        <input type="text" id="size-${item.id}" value="${item.size}" placeholder="size" oninput="updateItem(${item.id},'size',this.value)" style="text-align:center;">
+        <input type="number" id="qty-${item.id}" value="${item.qty}" min="1" oninput="updateItem(${item.id},'qty',this.value)" style="text-align:center;">
+        <div class="subtotal" id="sub-${item.id}">Rp ${fmt(item.price * item.qty)}</div>
+        <button class="btn-rm" onclick="removeItem(${item.id})">✕</button>
+      </div>
+    `;
+    c.appendChild(div);
+  });
+  document.getElementById('itemCount').textContent = `${items.length} item`;
+}
+
+function updateItem(id, field, val) {
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  if (field === 'qty' || field === 'price') item[field] = parseFloat(val) || 0;
+  else item[field] = val;
+  const sub = document.getElementById(`sub-${id}`);
+  if (sub) sub.textContent = `Rp ${fmt(item.price * item.qty)}`;
+  if (field === 'name') document.getElementById(`nameLabel-${id}`).textContent = val || '—';
+  calcTotals();
+}
+
+// ─── AUTOCOMPLETE ────────────────────────────────────────────────
+let acTimeout = {};
+function filterProducts(id, q) {
+  clearTimeout(acTimeout[id]);
+  acTimeout[id] = setTimeout(() => {
+    const item = items.find(i => i.id === id);
+    if (item) { item.name = q; item.price = 0; }
+    const ac = document.getElementById(`ac-${id}`);
+    if (!q.trim()) { ac.classList.add('hidden'); return; }
+    const results = PRODUCTS.filter(p => p.n.toLowerCase().includes(q.toLowerCase())).slice(0, 15);
+    if (!results.length) { ac.classList.add('hidden'); return; }
+    ac.innerHTML = results.map(p => 
+      `<div class="ac-item" onmousedown="selectProduct(${id},'${p.n.replace(/'/g,"\\'")}',${p.h})">
+        <span class="ac-item-name">${p.n}</span>
+        <span class="ac-item-price">Rp ${fmt(p.h)}</span>
+      </div>`
+    ).join('');
+    ac.classList.remove('hidden');
+  }, 120);
+}
+
+function selectProduct(id, name, price) {
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  item.name = name; item.price = price;
+  document.getElementById(`name-${id}`).value = name;
+  document.getElementById(`price-${id}`).value = price;
+  document.getElementById(`nameLabel-${id}`).textContent = name;
+  document.getElementById(`sub-${id}`).textContent = `Rp ${fmt(price * item.qty)}`;
+  document.getElementById(`ac-${id}`).classList.add('hidden');
+  calcTotals();
+}
+
+function hideAC(id) {
+  setTimeout(() => {
+    const ac = document.getElementById(`ac-${id}`);
+    if (ac) ac.classList.add('hidden');
+  }, 200);
+}
+
+// ─── PAYMENT ─────────────────────────────────────────────────────
+function selectPayment(p) {
+  currentPayment = p;
+  document.querySelectorAll('.pay-btn').forEach(b => b.classList.remove('selected'));
+  const el = document.getElementById(`pay-${p}`);
+  if (el) el.classList.add('selected');
+}
+
+function setUangType(t) {
+  uangType = t;
+  document.getElementById('utype-masuk').classList.toggle('selected', t === 'masuk');
+  document.getElementById('utype-keluar').classList.toggle('selected', t === 'keluar');
+}
+
+// ─── CALCULATIONS ─────────────────────────────────────────────────
+function calcTotals() {
+  const total = items.reduce((s, i) => s + i.price * i.qty, 0);
+  const diskon = parseFloat(document.getElementById('diskon').value) || 0;
+  const bayar = total - diskon;
+  document.getElementById('ttlProduk').textContent = `Rp ${fmt(total)}`;
+  document.getElementById('ttlDiskon').textContent = `- Rp ${fmt(diskon)}`;
+  document.getElementById('ttlBayar').textContent = `Rp ${fmt(bayar)}`;
+  calcChange();
+}
+
+function calcChange() {
+  const total = items.reduce((s, i) => s + i.price * i.qty, 0);
+  const diskon = parseFloat(document.getElementById('diskon').value) || 0;
+  const bayar = total - diskon;
+  const uang = parseFloat(document.getElementById('uangBayar').value) || 0;
+  const kembalian = uang - bayar;
+  const el = document.getElementById('ttlKembali');
+  el.textContent = `Rp ${fmt(Math.abs(kembalian))}`;
+  el.style.color = kembalian >= 0 ? 'var(--accent2)' : 'var(--danger)';
+  el.previousElementSibling.textContent = kembalian >= 0 ? 'KEMBALIAN' : 'KURANG';
+}
+
+// ─── SUBMIT ───────────────────────────────────────────────────────
+function submitNota() {
+  const notaId = document.getElementById('notaId').textContent;
+  const kasir = document.getElementById('kasir').value;
+  const now = new Date();
+
+  let payload = {};
+
+  if (mode === 'jual') {
+    if (items.every(i => !i.name)) { toast('Tambah minimal 1 barang!', true); return; }
+    const total = items.reduce((s,i) => s + i.price * i.qty, 0);
+    const diskon = parseFloat(document.getElementById('diskon').value) || 0;
+    const totalBayar = total - diskon;
+    const uangBayar = parseFloat(document.getElementById('uangBayar').value) || 0;
+    payload = {
+      type: 'jual', notaId, kasir, waktu: now.toISOString(),
+      payment: currentPayment, items: items.filter(i => i.name),
+      totalProduk: total, diskon, totalBayar, uangBayar,
+      kembalian: uangBayar - totalBayar,
+      saldoAwal: parseFloat(document.getElementById('saldoAwal').value) || 0
+    };
+  } else if (mode === 'aktual') {
+    payload = {
+      type: 'aktual', notaId, kasir, waktu: now.toISOString(),
+      keterangan: document.getElementById('aktualKet').value,
+      saldoAwal: parseFloat(document.getElementById('aktualSaldoAwal').value) || 0,
+      saldoAkhir: parseFloat(document.getElementById('aktualSaldoAkhir').value) || 0
+    };
+  } else if (mode === 'uang') {
+    const jumlah = parseFloat(document.getElementById('uangJumlah').value) || 0;
+    const ket = document.getElementById('uangKet').value;
+    payload = {
+      type: 'uang', notaId, kasir, waktu: now.toISOString(),
+      subtype: uangType, keterangan: `uang ${uangType}${ket ? ' ' + ket : ''}`,
+      jumlah, payment: 'CASH'
+    };
+  }
+
+  saveLocal(payload);
+  toast(`✓ Nota ${notaId} tersimpan`);
+  setTimeout(() => {
+    resetNota();
+    syncNow(true);
+  }, 800);
+}
+
+// ─── LOCAL STORAGE ────────────────────────────────────────────────
+function saveLocal(data) {
+  const logs = getLocalLogs();
+  logs.push({ ...data, synced: false });
+  localStorage.setItem('kodachi_logs', JSON.stringify(logs));
+  updateSyncStatus();
+}
+
+function getLocalLogs() {
+  try { return JSON.parse(localStorage.getItem('kodachi_logs') || '[]'); }
+  catch(e) { return []; }
+}
+
+function updateSyncStatus() {
+  const logs = getLocalLogs();
+  const pending = logs.filter(l => !l.synced).length;
+  const el = document.getElementById('syncStatus');
+  if (pending === 0) { el.textContent = '● SYNCED'; el.className = 'sync-status ok'; }
+  else { el.textContent = `● ${pending} PENDING`; el.className = 'sync-status pending'; }
+}
+
+// ─── SYNC TO GOOGLE SHEETS ────────────────────────────────────────
+async function syncNow(silent = false) {
+  const logs = getLocalLogs();
+  const pending = logs.filter(l => !l.synced);
+  if (!pending.length) { if (!silent) toast('Tidak ada data pending'); return; }
+
+  const el = document.getElementById('syncStatus');
+  el.textContent = '● SYNCING...'; el.className = 'sync-status pending';
+
+  if (APPS_SCRIPT_URL.includes('YOUR_SCRIPT_ID')) {
+    // Demo mode - mark as synced anyway
+    const updated = getLocalLogs().map(l => ({ ...l, synced: true }));
+    localStorage.setItem('kodachi_logs', JSON.stringify(updated));
+    updateSyncStatus();
+    if (!silent) toast('ℹ️ Set Apps Script URL dulu! (Demo: ditandai synced)');
+    return;
+  }
+
+  try {
+    // Flatten items for Google Sheets rows
+    const rows = [];
+    pending.forEach(nota => {
+      if (nota.type === 'jual' && nota.items) {
+        nota.items.forEach(item => {
+          rows.push({
+            notaId: nota.notaId, waktu: nota.waktu, kasir: nota.kasir,
+            payment: nota.payment, produk: item.name, ukuran: item.size,
+            qty: item.qty, harga: item.price, subtotal: item.price * item.qty,
+            totalBayar: nota.totalBayar, kembalian: nota.kembalian, type: 'jual'
+          });
+        });
+      } else {
+        rows.push({
+          notaId: nota.notaId, waktu: nota.waktu, kasir: nota.kasir,
+          payment: nota.payment || 'CASH',
+          produk: nota.keterangan || nota.subtype || nota.type,
+          type: nota.type, jumlah: nota.jumlah || 0,
+          saldoAwal: nota.saldoAwal || 0, saldoAkhir: nota.saldoAkhir || 0
+        });
+      }
+    });
+
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ rows }),
+      headers: { 'Content-Type': 'text/plain' }
+    });
+    const json = await res.json();
+    if (json.status === 'ok') {
+      const updated = getLocalLogs().map(l => pending.find(p => p.notaId === l.notaId) ? { ...l, synced: true } : l);
+      localStorage.setItem('kodachi_logs', JSON.stringify(updated));
+      updateSyncStatus();
+      if (!silent) toast(`✓ ${pending.length} nota berhasil disync`);
+    } else throw new Error(json.message);
+  } catch(e) {
+    el.textContent = '● SYNC ERROR'; el.className = 'sync-status error';
+    if (!silent) toast('Gagal sync: ' + e.message, true);
+  }
+}
+
+// ─── PENDING LOG ──────────────────────────────────────────────────
+function showPending() {
+  const logs = getLocalLogs().slice(-30).reverse();
+  const el = document.getElementById('pendingList');
+  if (!logs.length) { el.innerHTML = '<div style="color:var(--muted);padding:8px 0;">Belum ada nota tersimpan.</div>'; }
+  else {
+    el.innerHTML = logs.map(l => `
+      <div class="pending-item">
+        <span><span class="status-dot ${l.synced?'synced':''}"></span><span class="nota-no">${l.notaId}</span></span>
+        <span>${l.kasir} · ${l.type} · ${l.synced?'✓ synced':'pending'}</span>
+      </div>
+    `).join('');
+  }
+  document.getElementById('modalPending').classList.remove('hidden');
+}
+function closePending() { document.getElementById('modalPending').classList.add('hidden'); }
+
+// ─── PRINT ────────────────────────────────────────────────────────
+function printNota() {
+  const notaId = document.getElementById('notaId').textContent;
+  const kasir = document.getElementById('kasir').value;
+  const total = items.reduce((s,i) => s+i.price*i.qty, 0);
+  const diskon = parseFloat(document.getElementById('diskon').value) || 0;
+  const totalBayar = total - diskon;
+  const uangBayar = parseFloat(document.getElementById('uangBayar').value) || 0;
+  const kembalian = uangBayar - totalBayar;
+  const now = new Date();
+
+  const itemRows = items.filter(i=>i.name).map(i=>
+    `<div class="row"><span>${i.name}${i.size?' ('+i.size+')':''} x${i.qty}</span><span>Rp ${fmt(i.price*i.qty)}</span></div>`
+  ).join('');
+
+  document.getElementById('print-area').innerHTML = `
+    <div class="center"><b>Toko Sepatu Kodachi</b></div>
+    <div class="center" style="font-size:10px;color:var(--muted)">Jl. Monjali No. 107, Sleman, DIY</div>
+    <div class="divider"></div>
+    <div class="row"><span>${notaId}</span><span>Kasir: ${kasir}</span></div>
+    <div style="font-size:10px;color:var(--muted);margin-bottom:4px;">${now.toLocaleString('id-ID')}</div>
+    <div class="divider"></div>
+    ${itemRows}
+    <div class="divider"></div>
+    ${diskon ? `<div class="row"><span>Diskon</span><span>- Rp ${fmt(diskon)}</span></div>` : ''}
+    <div class="row"><b>TOTAL</b><b>Rp ${fmt(totalBayar)}</b></div>
+    <div class="row"><span>Payment</span><span>${currentPayment}</span></div>
+    ${uangBayar ? `<div class="row"><span>Bayar</span><span>Rp ${fmt(uangBayar)}</span></div>` : ''}
+    ${uangBayar ? `<div class="row"><span>${kembalian>=0?'Kembalian':'Kurang'}</span><span>Rp ${fmt(Math.abs(kembalian))}</span></div>` : ''}
+    <div class="divider"></div>
+    <div class="center" style="font-size:10px;color:var(--muted)">www.sepatukodachi.com</div>
+    <div class="center" style="font-size:10px;color:var(--muted)">WA: 0831-0834-3491</div>
+    <div class="center" style="font-size:10px;color:var(--muted)">@kodachiofficial</div>
+  `;
+  document.getElementById('modalPrint').classList.remove('hidden');
+}
+
+// ─── RESET ────────────────────────────────────────────────────────
+function resetNota() {
+  items = []; itemCounter = 0;
+  document.getElementById('diskon').value = 0;
+  document.getElementById('uangBayar').value = '';
+  document.getElementById('ttlProduk').textContent = 'Rp 0';
+  document.getElementById('ttlDiskon').textContent = '- Rp 0';
+  document.getElementById('ttlBayar').textContent = 'Rp 0';
+  document.getElementById('ttlKembali').textContent = 'Rp 0';
+  selectPayment('CASH');
+  generateNotaId();
+  addItem();
+}
+
+// ─── UTILS ────────────────────────────────────────────────────────
+function fmt(n) { return Math.round(n).toLocaleString('id-ID'); }
+
+function toast(msg, isError = false) {
+  const el = document.getElementById('toastEl');
+  el.textContent = msg;
+  el.className = `toast${isError ? ' error' : ''}`;
+  el.classList.remove('hidden');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.add('hidden'), 3000);
+}
+
+// Auto sync setiap 5 menit
+setInterval(() => syncNow(true), 5 * 60 * 1000);
+
+init();
+</script>
+
+<!-- APPS SCRIPT TEMPLATE INFO (hapus setelah setup) -->
+<!-- 
+CARA SETUP APPS SCRIPT:
+1. Di Google Sheets Kasir Kodachi, buka Extensions > Apps Script
+2. Paste kode berikut:
+
+function doPost(e) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('Log') || ss.insertSheet('Log');
+  const data = JSON.parse(e.postData.contents);
+  data.rows.forEach(row => {
+    sheet.appendRow([
+      row.notaId, row.waktu, row.kasir, row.payment,
+      row.produk, row.ukuran || '', row.qty || 1, row.harga || 0,
+      row.subtotal || 0, row.totalBayar || 0, row.kembalian || 0,
+      row.type, row.jumlah || 0, row.saldoAwal || 0, row.saldoAkhir || 0
+    ]);
+  });
+  return ContentService.createTextOutput(JSON.stringify({status:'ok'}))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+3. Deploy > New deployment > Web app > Anyone can access
+4. Copy URL dan paste ke variabel APPS_SCRIPT_URL di HTML ini
+-->
+</body>
+</html>
