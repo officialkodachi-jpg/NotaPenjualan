@@ -862,19 +862,44 @@ function afterLogin(){
   initApp();
 }
 function refreshKasirDropdowns(){
-  const disp=document.getElementById('kasirDisplay'),hid=document.getElementById('kasirSelect');
+  const disp=document.getElementById('kasirDisplay');
+  const hid=document.getElementById('kasirSelect');
+  if(!hid)return;
+
   if(CU.role==='admin'){
+    // Admin: ganti hidden input jadi select dropdown pilih kasir
     const users=getUsers().filter(u=>u.role==='toko');
     if(disp)disp.style.display='none';
-    const sel=document.createElement('select');sel.className='ksel';sel.id='kasirSelect';
-    users.forEach(u=>{const o=document.createElement('option');o.value=u.display;o.textContent=u.display;sel.appendChild(o);});
+    const sel=document.createElement('select');
+    sel.className='ksel';sel.id='kasirSelect';
+    users.forEach(u=>{
+      const o=document.createElement('option');
+      o.value=u.display;o.textContent=u.display;
+      sel.appendChild(o);
+    });
     hid.replaceWith(sel);
   }else{
+    // Kasir toko: tampilkan nama, simpan di hidden input
     if(disp){disp.textContent=CU.display;disp.style.display='';}
-    const cur=document.getElementById('kasirSelect');if(cur)cur.value=CU.display;
+    // Pastikan hidden input punya value yang benar
+    if(hid.tagName==='INPUT'){
+      hid.value=CU.display;
+    } else if(hid.tagName==='SELECT'){
+      // Kalau sudah jadi select (misal login ulang), ganti balik jadi hidden
+      const inp=document.createElement('input');
+      inp.type='hidden';inp.id='kasirSelect';inp.value=CU.display;
+      hid.replaceWith(inp);
+    }
   }
+
+  // Dropdown kasir di tab Uang
   const tu=getUsers().filter(u=>u.role==='toko');
-  document.getElementById('uangKasir').innerHTML=tu.map(u=>`<option value="${u.display}"${u.display===CU.display?' selected':''}>${u.display}</option>`).join('');
+  const uangKasirEl=document.getElementById('uangKasir');
+  if(uangKasirEl){
+    uangKasirEl.innerHTML=tu.map(u=>
+      `<option value="${u.display}"${u.display===CU.display?' selected':''}>${u.display}</option>`
+    ).join('');
+  }
 }
 
 // ================================================================
@@ -1099,7 +1124,9 @@ function printNota(){
 
 function getKasir(){
   const el=document.getElementById('kasirSelect');
-  if(el.tagName==='SELECT')return el.value;
+  if(!el)return CU?CU.display:'';
+  if(el.tagName==='SELECT')return el.value||CU.display;
+  if(el.tagName==='INPUT')return el.value||CU.display;
   return CU?CU.display:'';
 }
 
@@ -1225,7 +1252,7 @@ function renderUangHistory(){
     return `<div class="uang-item ${cls}">
       <span style="font-size:15px;">${icon}</span>
       <span style="font-weight:500;">${r.produk||''}</span>
-      <span class="${jmlCls}">${r.type==='aktual'?'':'r.type==="uang keluar"?"-":"+"}Rp ${fmt(r.harga||0)}</span>
+      <span class="${jmlCls}">${r.type==='aktual' ? '' : r.type==='uang keluar' ? '- ' : '+ '}Rp ${fmt(r.harga||0)}</span>
       <span style="font-size:10px;color:var(--txt3);">${new Date(r.waktu).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}</span>
     </div>`;
   }).join('');
