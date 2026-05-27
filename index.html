@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Kasir Kodachi v4</title>
+<title>Kasir Kodachi v5</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -18,7 +18,7 @@
 }
 body{background:var(--bg);font-family:var(--sans);font-size:13px;color:var(--txt);min-height:100vh;}
 
-/* ── LOGIN ── */
+/* LOGIN */
 .login-screen{position:fixed;inset:0;background:var(--navy);display:flex;align-items:center;justify-content:center;z-index:9999;}
 .login-box{background:#fff;border-radius:4px;padding:32px 28px;width:300px;box-shadow:0 12px 40px rgba(0,0,0,.35);}
 .login-logo{text-align:center;margin-bottom:24px;}
@@ -32,7 +32,7 @@ body{background:var(--bg);font-family:var(--sans);font-size:13px;color:var(--txt
 .btn-login:hover{background:var(--navy2);}
 .login-err{background:#fff0f0;color:var(--red);padding:8px 10px;border-radius:3px;font-size:11px;margin-bottom:10px;display:none;border:1px solid #fcc;}
 
-/* ── TOPNAV ── */
+/* TOPNAV */
 .topnav{background:var(--navy);padding:0 14px;display:flex;align-items:center;gap:8px;height:42px;position:sticky;top:0;z-index:100;}
 .topnav-logo{font-family:var(--mono);font-size:13px;font-weight:700;color:#fff;letter-spacing:2px;flex:1;}
 .sync-ind{font-family:var(--mono);font-size:10px;padding:3px 9px;border-radius:10px;font-weight:700;letter-spacing:.5px;}
@@ -43,13 +43,19 @@ body{background:var(--bg);font-family:var(--sans);font-size:13px;color:var(--txt
 .tnbtn:hover{background:rgba(255,255,255,.2);}
 .tnu{font-size:11px;color:rgba(255,255,255,.7);padding:0 8px;border-left:1px solid rgba(255,255,255,.15);font-family:var(--mono);}
 
-/* ── TABS ── */
+/* STOK BADGE topnav */
+.stok-badge{font-family:var(--mono);font-size:10px;padding:3px 9px;border-radius:10px;font-weight:700;cursor:pointer;}
+.stok-ok{background:rgba(26,122,60,.3);color:#6ee7a0;border:1px solid rgba(110,231,160,.2);}
+.stok-loading{background:rgba(212,133,10,.3);color:#fbbf24;border:1px solid rgba(251,191,36,.2);}
+.stok-err{background:rgba(192,57,43,.3);color:#f87171;border:1px solid rgba(248,113,113,.2);}
+
+/* TABS */
 .sheet-tabs{display:flex;border-bottom:2px solid var(--border);background:#fff;padding:0 10px;overflow-x:auto;flex-shrink:0;}
 .stab{padding:9px 16px;font-size:12px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;color:var(--txt3);white-space:nowrap;margin-bottom:-2px;font-family:var(--mono);letter-spacing:.5px;}
 .stab.active{border-bottom-color:var(--navy);color:var(--navy);}
 .stab:hover:not(.active){color:var(--txt2);}
 
-/* ── LAYOUT: fixed 1024px max ── */
+/* LAYOUT */
 .app-wrap{max-width:1024px;margin:0 auto;background:var(--surface);min-height:calc(100vh - 42px);}
 .main-flex{display:flex;}
 .nota-panel{width:400px;min-width:400px;border-right:2px solid var(--border);}
@@ -57,7 +63,7 @@ body{background:var(--bg);font-family:var(--sans);font-size:13px;color:var(--txt
 .tab-page{display:none;padding:16px;min-height:calc(100vh - 86px);}
 .tab-page.active{display:block;}
 
-/* ── NOTA ── */
+/* NOTA */
 .nota-header{border:2px solid var(--navy);margin:10px;}
 .nht{background:var(--navy);color:#fff;text-align:center;font-weight:700;padding:5px;font-size:13px;font-family:var(--mono);letter-spacing:2px;}
 .nhs{text-align:center;padding:4px 8px;font-weight:700;font-size:13px;border-bottom:1px solid var(--border2);}
@@ -68,7 +74,7 @@ body{background:var(--bg);font-family:var(--sans);font-size:13px;color:var(--txt
 .nhd{display:grid;grid-template-columns:auto 1fr auto 1fr auto 1fr;gap:4px;align-items:center;padding:4px 7px;font-size:11px;font-family:var(--mono);}
 .dinp{border:1.5px solid var(--border);font-size:11px;padding:2px 4px;width:100%;text-align:center;font-family:var(--mono);border-radius:2px;outline:none;}
 
-/* ── NOTA TABLE ── */
+/* NOTA TABLE */
 .nota-table{margin:0 10px;border:2px solid var(--navy);border-top:none;}
 .nota-table table{width:100%;border-collapse:collapse;}
 .nota-table th{background:#e8edf5;border:1px solid #c5cdd8;padding:4px 4px;text-align:center;font-weight:700;font-size:11px;font-family:var(--mono);letter-spacing:.5px;}
@@ -79,17 +85,26 @@ body{background:var(--bg);font-family:var(--sans);font-size:13px;color:var(--txt
 .sc{text-align:right;font-family:var(--mono);font-size:12px;padding-right:4px;color:var(--txt);}
 .acw{position:relative;}
 .acl{position:absolute;top:100%;left:0;right:0;background:#fff;border:1.5px solid var(--navy2);z-index:300;max-height:180px;overflow-y:auto;box-shadow:0 6px 16px rgba(0,0,0,.12);}
-.aci{padding:6px 9px;cursor:pointer;font-size:11px;display:flex;justify-content:space-between;border-bottom:1px solid var(--border2);}
+.aci{padding:6px 9px;cursor:pointer;font-size:11px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border2);gap:6px;}
 .aci:hover{background:#dbeafe;}
-.acp{color:var(--navy2);font-weight:600;font-family:var(--mono);}
+.acp{color:var(--navy2);font-weight:600;font-family:var(--mono);white-space:nowrap;}
+.aci-stok{font-size:9px;font-family:var(--mono);padding:1px 5px;border-radius:8px;white-space:nowrap;}
+.stok-ada{background:#ecfdf5;color:var(--green);border:1px solid #a7f3d0;}
+.stok-low{background:#fffbeb;color:var(--amber);border:1px solid #fde68a;}
+.stok-kosong{background:#fff5f5;color:var(--red);border:1px solid #fecaca;}
+.stok-na{background:#f7f9fc;color:var(--txt3);border:1px solid var(--border);}
 
-/* ── TOTALS ── */
+/* STOK WARNING di baris item */
+.stok-warn-row{background:#fff5f5!important;}
+.stok-warn-badge{font-size:9px;color:var(--red);font-family:var(--mono);font-weight:700;display:block;padding:0 3px;}
+
+/* TOTALS */
 .nota-totals{margin:0 10px;border:2px solid var(--navy);border-top:none;}
 .nota-totals table{width:100%;border-collapse:collapse;}
 .nota-totals td{border:1px solid var(--border2);padding:3px 7px;font-size:12px;}
 .nota-totals .lbl{font-weight:700;background:#f7f9fc;font-family:var(--mono);}
 
-/* ── PAYMENT BOX ── */
+/* PAYMENT BOX */
 .pay-box{border:2px solid var(--navy);}
 .pay-head{display:grid;grid-template-columns:1fr 1fr 1fr;background:var(--navy);color:#fff;text-align:center;font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.5px;}
 .pay-head div{padding:5px;border-left:1px solid rgba(255,255,255,.15);}
@@ -101,7 +116,7 @@ body{background:var(--bg);font-family:var(--sans);font-size:13px;color:var(--txt
 #uangBayarInp{width:100%;border:none;font-size:15px;font-weight:700;text-align:center;outline:none;padding:0;font-family:var(--mono);}
 .pay-method{width:100%;border:none;border-top:1.5px solid var(--border);font-size:13px;font-weight:700;padding:8px 12px;background:#fff;outline:none;color:var(--navy);cursor:pointer;font-family:var(--mono);}
 
-/* ── ACTION BUTTONS ── */
+/* ACTION BUTTONS */
 .act-btns{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
 .bta{padding:11px 8px;border:none;border-radius:2px;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:1px;font-family:var(--mono);}
 .b-print{background:var(--navy);color:#fff;}
@@ -112,22 +127,22 @@ body{background:var(--bg);font-family:var(--sans);font-size:13px;color:var(--txt
 .b-reset:hover{background:var(--green2);}
 .b-batal{background:var(--red);color:#fff;}
 .b-batal:hover{background:#a93226;}
-
 .info-box{background:#fafbfc;border:1.5px solid var(--border);border-radius:3px;padding:10px 13px;font-size:11px;line-height:1.8;color:var(--txt2);}
 
-/* ── SALDO ── */
+/* SALDO */
 .saldo-box{border:2px solid var(--border);}
 .saldo-row{display:grid;grid-template-columns:110px 1fr;align-items:center;border-bottom:1px solid var(--border2);}
 .saldo-row:last-child{border-bottom:none;}
 .saldo-lbl{padding:8px 12px;font-weight:700;font-size:11px;background:#f7f9fc;border-right:1px solid var(--border2);font-family:var(--mono);letter-spacing:.5px;}
 .saldo-inp{width:100%;border:none;font-size:14px;font-weight:700;color:var(--navy);padding:8px 12px;outline:none;font-family:var(--mono);}
 
-/* ── UANG TAB ── */
+/* UANG TAB */
 .uang-form{max-width:480px;}
-.utype-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+.utype-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;}
 .utype-btn{padding:12px;border:2px solid var(--border);border-radius:3px;font-size:13px;font-weight:700;cursor:pointer;background:#fff;text-align:center;font-family:var(--mono);}
 .utype-btn.masuk.active{background:#ecfdf5;border-color:var(--green);color:var(--green);}
 .utype-btn.keluar.active{background:#fff5f5;border-color:var(--red);color:var(--red);}
+.utype-btn.aktual.active{background:#eff6ff;border-color:var(--blue);color:var(--blue);}
 .fg{margin-bottom:12px;}
 .fg label{font-size:10px;color:var(--txt2);font-weight:700;display:block;margin-bottom:5px;font-family:var(--mono);letter-spacing:.5px;}
 .fg input,.fg select{width:100%;border:1.5px solid var(--border);border-radius:3px;padding:9px 10px;font-size:13px;outline:none;font-family:var(--sans);}
@@ -137,10 +152,12 @@ body{background:var(--bg);font-family:var(--sans);font-size:13px;color:var(--txt
 .uang-item{display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;align-items:center;padding:8px 11px;border-radius:3px;margin-bottom:5px;font-size:12px;}
 .uang-item.masuk{background:#ecfdf5;border-left:3px solid var(--green);}
 .uang-item.keluar{background:#fff5f5;border-left:3px solid var(--red);}
+.uang-item.aktual{background:#eff6ff;border-left:3px solid var(--blue);}
 .jml-m{color:var(--green);font-weight:700;font-family:var(--mono);font-size:13px;}
 .jml-k{color:var(--red);font-weight:700;font-family:var(--mono);font-size:13px;}
+.jml-a{color:var(--blue);font-weight:700;font-family:var(--mono);font-size:13px;}
 
-/* ── LOG TABLE ── */
+/* LOG TABLE */
 .log-toolbar{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center;}
 .log-toolbar input{border:1.5px solid var(--border);border-radius:3px;padding:6px 10px;font-size:12px;outline:none;width:200px;}
 .log-toolbar input:focus{border-color:var(--navy);}
@@ -153,7 +170,7 @@ body{background:var(--bg);font-family:var(--sans);font-size:13px;color:var(--txt
 .synced{color:var(--green);font-weight:700;font-size:10px;}
 .pend{color:var(--amber);font-weight:700;font-size:10px;}
 
-/* ── ADMIN ── */
+/* ADMIN */
 .adm-sec{background:#fff;border:1.5px solid var(--border);border-radius:3px;padding:16px;margin-bottom:12px;}
 .adm-sec h3{font-size:12px;font-weight:700;color:var(--navy);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border2);font-family:var(--mono);letter-spacing:1px;}
 .adm-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
@@ -168,7 +185,28 @@ body{background:var(--bg);font-family:var(--sans);font-size:13px;color:var(--txt
 .tag-admin{background:var(--red);color:#fff;font-size:9px;padding:1px 6px;border-radius:8px;font-weight:700;font-family:var(--mono);}
 .tag-toko{background:var(--green);color:#fff;font-size:9px;padding:1px 6px;border-radius:8px;font-weight:700;font-family:var(--mono);}
 
-/* ── MODAL ── */
+/* MAPPING KOLOM */
+.map-table{width:100%;border-collapse:collapse;font-size:12px;}
+.map-table th{background:#e8edf5;border:1px solid #c5cdd8;padding:7px 10px;text-align:left;font-family:var(--mono);font-size:10px;letter-spacing:.5px;}
+.map-table td{border:1px solid var(--border2);padding:5px 8px;}
+.map-table select{width:100%;border:1.5px solid var(--border);border-radius:3px;padding:4px 6px;font-size:11px;font-family:var(--mono);outline:none;}
+.map-table select:focus{border-color:var(--navy);}
+.col-letter{font-family:var(--mono);font-weight:700;color:var(--navy);font-size:12px;}
+
+/* STOK PANEL */
+.stok-panel{background:#f7f9fc;border:1.5px solid var(--border);border-radius:3px;padding:12px;margin-bottom:10px;}
+.stok-panel h4{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--navy);margin-bottom:8px;letter-spacing:.5px;}
+.stok-search{width:100%;border:1.5px solid var(--border);border-radius:3px;padding:6px 10px;font-size:12px;outline:none;font-family:var(--sans);margin-bottom:8px;}
+.stok-search:focus{border-color:var(--navy);}
+.stok-list{max-height:200px;overflow-y:auto;}
+.stok-item{display:flex;justify-content:space-between;align-items:center;padding:4px 8px;border-bottom:1px solid var(--border2);font-size:11px;font-family:var(--mono);}
+.stok-item:last-child{border-bottom:none;}
+.stok-num{font-weight:700;}
+.stok-num.ok{color:var(--green);}
+.stok-num.low{color:var(--amber);}
+.stok-num.zero{color:var(--red);}
+
+/* MODAL */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px;}
 .modal{background:#fff;border-radius:4px;width:100%;max-width:360px;padding:22px;box-shadow:0 12px 40px rgba(0,0,0,.2);}
 .modal h3{font-size:13px;font-weight:700;margin-bottom:14px;color:var(--navy);font-family:var(--mono);letter-spacing:.5px;}
@@ -181,23 +219,26 @@ body{background:var(--bg);font-family:var(--sans);font-size:13px;color:var(--txt
 .btn-s{flex:1;padding:9px;background:#f0f2f5;border:1.5px solid var(--border);border-radius:3px;cursor:pointer;font-size:12px;font-family:var(--mono);}
 .btn-dr{flex:1;padding:9px;background:var(--red);color:#fff;border:none;border-radius:3px;cursor:pointer;font-weight:700;font-size:12px;font-family:var(--mono);}
 
-/* ── PRINT PREVIEW ── */
+/* PRINT */
 .pra{font-family:var(--mono);font-size:12px;line-height:1.6;max-height:420px;overflow-y:auto;border:1px solid var(--border2);padding:12px;border-radius:3px;background:#fafbfc;}
 .prr{display:flex;justify-content:space-between;}
 .prd{border-top:1px dashed #999;margin:6px 0;}
 .prc{text-align:center;}
 
-/* ── TOAST ── */
+/* TOAST */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:10px 22px;border-radius:3px;font-size:12px;font-weight:700;z-index:9999;animation:tin .2s;color:#fff;pointer-events:none;font-family:var(--mono);letter-spacing:.5px;}
 .t-ok{background:var(--green);}.t-err{background:var(--red);}.t-info{background:var(--navy);}
 @keyframes tin{from{opacity:0;transform:translateX(-50%) translateY(8px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
 .hidden{display:none!important;}
 
-/* ── SCHED ── */
+/* STOK WARN POPUP */
+.stok-warn-popup{position:fixed;top:52px;right:14px;background:#fff;border:2px solid var(--red);border-radius:4px;padding:12px 16px;z-index:200;max-width:280px;box-shadow:0 6px 20px rgba(0,0,0,.15);}
+.stok-warn-popup h4{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--red);margin-bottom:6px;}
+.stok-warn-popup ul{list-style:none;font-size:11px;font-family:var(--mono);line-height:1.8;}
+.stok-warn-popup .swp-close{position:absolute;top:6px;right:8px;background:none;border:none;cursor:pointer;font-size:14px;color:var(--txt3);}
+
 .sched-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
 .sched-row select{border:1.5px solid var(--border);border-radius:3px;padding:5px 8px;font-size:11px;outline:none;font-family:var(--mono);}
-
-/* ── SYNC STATUS DETAIL ── */
 #syncLog{font-size:10px;padding:8px 10px;background:#f7f9fc;border:1px solid var(--border2);border-radius:3px;font-family:var(--mono);line-height:1.7;margin-top:6px;}
 
 @media print{
@@ -228,6 +269,7 @@ body{background:var(--bg);font-family:var(--sans);font-size:13px;color:var(--txt
   <div class="topnav">
     <span class="topnav-logo">⬡ KODACHI</span>
     <span id="syncStatus" class="sync-ind s-ok">● SYNCED</span>
+    <span id="stokStatus" class="stok-badge stok-loading" onclick="syncStok()" title="Klik untuk refresh stok">📦 STOK...</span>
     <button class="tnbtn" onclick="syncNow()">☁ SYNC</button>
     <span class="tnu" id="topUser"></span>
     <button class="tnbtn" onclick="doLogout()" style="border-color:rgba(248,113,113,.4);color:#f87171;">KELUAR</button>
@@ -238,10 +280,11 @@ body{background:var(--bg);font-family:var(--sans);font-size:13px;color:var(--txt
       <div class="stab active" data-tab="input" onclick="switchTab('input')">INPUT</div>
       <div class="stab" data-tab="uang" onclick="switchTab('uang')">UANG</div>
       <div class="stab" data-tab="log" onclick="switchTab('log')">LOG</div>
+      <div class="stab" data-tab="stok" onclick="switchTab('stok')">STOK</div>
       <div class="stab admin-only hidden" data-tab="admin" onclick="switchTab('admin')">ADMIN</div>
     </div>
 
-    <!-- ═══════════════════ TAB INPUT ═══════════════════ -->
+    <!-- TAB INPUT -->
     <div class="main-flex" id="tab-input">
       <div class="nota-panel">
         <div class="nota-header">
@@ -275,7 +318,7 @@ body{background:var(--bg);font-family:var(--sans);font-size:13px;color:var(--txt
               <tr>
                 <th style="width:22px;">NO</th>
                 <th>BARANG</th>
-                <th style="width:54px;">DETIL</th>
+                <th style="width:54px;">SIZE</th>
                 <th style="width:36px;">QTY</th>
                 <th style="width:72px;">SUBTOTAL</th>
               </tr>
@@ -339,7 +382,8 @@ body{background:var(--bg);font-family:var(--sans);font-size:13px;color:var(--txt
           <b>PANDUAN:</b><br>
           — <b>Wajib Reset</b> sebelum nota baru<br>
           — Print = otomatis simpan log &amp; sync ke spreadsheet<br>
-          — Batal = catat nota yang dibatalkan
+          — Batal = catat nota yang dibatalkan<br>
+          — <b style="color:var(--red);">⚠ Stok merah</b> = barang habis, cek dulu ke gudang
         </div>
 
         <div class="saldo-box">
@@ -353,18 +397,22 @@ body{background:var(--bg);font-family:var(--sans);font-size:13px;color:var(--txt
           </div>
         </div>
       </div>
-    </div><!-- /main-flex -->
+    </div>
 
-    <!-- ═══════════════════ TAB UANG ═══════════════════ -->
+    <!-- TAB UANG -->
     <div class="tab-page" id="tab-uang">
-      <h2 style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:16px;font-family:var(--mono);letter-spacing:1px;">💰 UANG MASUK / UANG KELUAR</h2>
+      <h2 style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:16px;font-family:var(--mono);letter-spacing:1px;">💰 UANG MASUK / KELUAR / AKTUAL</h2>
       <div class="uang-form">
         <div class="utype-row">
-          <button class="utype-btn masuk active" id="ubtn-masuk" onclick="setUangType('masuk')">+ UANG MASUK</button>
-          <button class="utype-btn keluar" id="ubtn-keluar" onclick="setUangType('keluar')">- UANG KELUAR</button>
+          <button class="utype-btn masuk active" id="ubtn-masuk" onclick="setUangType('masuk')">+ MASUK</button>
+          <button class="utype-btn keluar" id="ubtn-keluar" onclick="setUangType('keluar')">- KELUAR</button>
+          <button class="utype-btn aktual" id="ubtn-aktual" onclick="setUangType('aktual')">≡ AKTUAL</button>
         </div>
-        <div class="fg"><label>KETERANGAN</label><input type="text" id="uangKet" placeholder="misal: titipan, belanja, dll..."></div>
-        <div class="fg"><label>JUMLAH (Rp)</label><input type="number" id="uangJumlah" placeholder="0" style="font-size:18px;font-weight:700;font-family:var(--mono);"></div>
+        <div id="aktualNote" class="hidden" style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:3px;padding:8px 12px;margin-bottom:12px;font-size:11px;color:var(--blue);font-family:var(--mono);">
+          AKTUAL = pencatatan uang tunai aktual di laci kasir. Masukkan jumlah uang yang benar-benar ada.
+        </div>
+        <div class="fg"><label>KETERANGAN</label><input type="text" id="uangKet" placeholder="misal: titipan, belanja, aktual shift pagi..."></div>
+        <div class="fg"><label id="uangJumlahLabel">JUMLAH (Rp)</label><input type="number" id="uangJumlah" placeholder="0" style="font-size:18px;font-weight:700;font-family:var(--mono);"></div>
         <div class="fg"><label>KASIR</label><select id="uangKasir"></select></div>
         <button class="btn-su" onclick="submitUang()">✓ SIMPAN &amp; SYNC</button>
       </div>
@@ -375,7 +423,7 @@ body{background:var(--bg);font-family:var(--sans);font-size:13px;color:var(--txt
       </div>
     </div>
 
-    <!-- ═══════════════════ TAB LOG ═══════════════════ -->
+    <!-- TAB LOG -->
     <div class="tab-page" id="tab-log">
       <div class="log-toolbar">
         <input type="text" id="logSearch" placeholder="Cari nota, produk, kasir..." oninput="renderLogTable()">
@@ -396,7 +444,7 @@ body{background:var(--bg);font-family:var(--sans);font-size:13px;color:var(--txt
           <thead>
             <tr>
               <th>NOTA</th><th>WAKTU</th><th>KASIR</th><th>PAYMENT</th>
-              <th>PRODUK</th><th>DETIL</th><th>QTY</th><th>HARGA</th>
+              <th>PRODUK</th><th>SIZE</th><th>QTY</th><th>HARGA</th>
               <th>SUBTOTAL</th><th>TOTAL BAYAR</th><th>KEMBALIAN</th>
               <th>TIPE</th><th>STATUS</th>
             </tr>
@@ -406,13 +454,51 @@ body{background:var(--bg);font-family:var(--sans);font-size:13px;color:var(--txt
       </div>
     </div>
 
-    <!-- ═══════════════════ TAB ADMIN ═══════════════════ -->
+    <!-- TAB STOK -->
+    <div class="tab-page" id="tab-stok">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+        <h2 style="font-size:13px;font-weight:700;color:var(--navy);font-family:var(--mono);letter-spacing:1px;">📦 STATUS STOK</h2>
+        <div style="display:flex;gap:8px;">
+          <button onclick="syncStok()" style="padding:7px 14px;background:var(--navy);color:#fff;border:none;border-radius:3px;cursor:pointer;font-size:11px;font-weight:700;font-family:var(--mono);">↻ REFRESH STOK</button>
+          <span id="stokLastUpdate" style="font-size:10px;color:var(--txt3);font-family:var(--mono);align-self:center;"></span>
+        </div>
+      </div>
+      <div style="margin-bottom:10px;display:flex;gap:8px;flex-wrap:wrap;">
+        <input type="text" id="stokSearch" placeholder="Cari produk..." oninput="renderStokTab()"
+          style="border:1.5px solid var(--border);border-radius:3px;padding:6px 10px;font-size:12px;outline:none;width:220px;">
+        <select id="stokFilter" onchange="renderStokTab()"
+          style="border:1.5px solid var(--border);border-radius:3px;padding:6px 8px;font-size:12px;outline:none;">
+          <option value="">Semua</option>
+          <option value="kosong">Stok Kosong (0)</option>
+          <option value="low">Stok Tipis (1-3)</option>
+          <option value="ada">Stok Ada (>3)</option>
+        </select>
+      </div>
+      <div id="stokTabContent">
+        <div style="color:var(--txt3);font-size:12px;font-family:var(--mono);padding:20px 0;">Belum ada data stok. Klik REFRESH STOK.</div>
+      </div>
+    </div>
+
+    <!-- TAB ADMIN -->
     <div class="tab-page" id="tab-admin">
       <div style="max-width:700px;">
         <div class="adm-sec">
           <h3>RINGKASAN HARI INI</h3>
           <div class="adm-grid" id="adminStats"></div>
         </div>
+
+        <!-- MAPPING KOLOM -->
+        <div class="adm-sec">
+          <h3>MAPPING KOLOM → SHEET PENJUALAN</h3>
+          <p style="font-size:11px;color:var(--txt2);margin-bottom:12px;font-family:var(--mono);">Tentukan field mana yang dikirim ke kolom A, B, C, ... di sheet Penjualan (dan LogNota). Urutan dari atas = kolom A dst.</p>
+          <div id="mappingUI"></div>
+          <div style="display:flex;gap:8px;margin-top:10px;">
+            <button onclick="saveMappingConfig()" style="padding:8px 16px;background:var(--navy);color:#fff;border:none;border-radius:3px;cursor:pointer;font-size:11px;font-weight:700;font-family:var(--mono);">💾 SIMPAN MAPPING</button>
+            <button onclick="resetMappingConfig()" style="padding:8px 14px;background:var(--amber);color:#fff;border:none;border-radius:3px;cursor:pointer;font-size:11px;font-weight:700;font-family:var(--mono);">↺ RESET DEFAULT</button>
+          </div>
+          <div id="mappingInfo" style="font-size:10px;margin-top:8px;font-family:var(--mono);color:var(--txt2);"></div>
+        </div>
+
         <div class="adm-sec">
           <h3>MANAJEMEN AKUN</h3>
           <table class="utbl" id="usersTable"></table>
@@ -420,6 +506,7 @@ body{background:var(--bg);font-family:var(--sans);font-size:13px;color:var(--txt
             <button onclick="showAddUser()" style="padding:8px 14px;background:var(--navy);color:#fff;border:none;border-radius:3px;cursor:pointer;font-size:11px;font-weight:700;font-family:var(--mono);">+ TAMBAH AKUN</button>
           </div>
         </div>
+
         <div class="adm-sec">
           <h3>MANAJEMEN LOG</h3>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
@@ -438,6 +525,7 @@ body{background:var(--bg);font-family:var(--sans);font-size:13px;color:var(--txt
             <div id="schedStatus" style="font-size:10px;margin-top:6px;font-family:var(--mono);color:var(--txt2);"></div>
           </div>
         </div>
+
         <div class="adm-sec">
           <h3>AUTO SYNC</h3>
           <div style="font-size:11px;color:var(--txt2);margin-bottom:10px;font-family:var(--mono);">Terakhir sync: <span id="lastSyncTime" style="font-weight:700;color:var(--navy);">—</span></div>
@@ -452,8 +540,8 @@ body{background:var(--bg);font-family:var(--sans);font-size:13px;color:var(--txt
         </div>
       </div>
     </div>
-  </div><!-- /app-wrap -->
-</div><!-- /appShell -->
+  </div>
+</div>
 
 <!-- MODALS -->
 <div class="modal-overlay hidden" id="modalBatal">
@@ -534,21 +622,60 @@ const PRODUCTS=[
 // ================================================================
 // CONFIG
 // ================================================================
-// ── Endpoint GAS utama (sync Log general ke spreadsheet Log lama)
 const APPS_URL = 'https://script.google.com/macros/s/AKfycbyobiezIED_jKGQcjyO-DPQXp--6eruEwpAGhhFKosr-qbB1DTpHwzqdRi6SP63Pnuv8w/exec';
-
-// ── Spreadsheet & Sheet target untuk LogNota
-const LOG_NOTA_SHEET_ID   = '1gJtL8Qr65ZXy5aNW4WWz1umKdSkFjGTZdPq7xfnJbfI';
+const LOG_NOTA_URL = APPS_URL;
 const LOG_NOTA_SHEET_NAME = 'LogNota';
 
-// ── GAS endpoint khusus untuk append ke LogNota
-// Kamu perlu deploy Apps Script baru yang menerima POST dan append ke sheet LogNota.
-// Template script-nya ada di bagian bawah file ini (komentar).
-// Ganti URL di bawah setelah deploy.
-const LOG_NOTA_URL = 'https://script.google.com/macros/s/AKfycbyobiezIED_jKGQcjyO-DPQXp--6eruEwpAGhhFKosr-qbB1DTpHwzqdRi6SP63Pnuv8w/exec';
-// ↑ Sementara pakai endpoint yang sama — ubah ke endpoint baru jika sudah deploy script LogNota
+// Spreadsheet ID untuk fetch stok
+const SHEET_ID = '1gJtL8Qr65ZXy5aNW4WWz1umKdSkFjGTZdPq7xfnJbfI';
+const STOCK_SHEET_NAME = 'Stock';
 
-const SK='kodachi_v3_logs', UK='kodachi_v3_users', SCHED_K='kodachi_v3_sched', SYNC_TS='kodachi_v3_syncts', SYNCINT_K='kodachi_v3_syncint';
+const SK='kodachi_v5_logs', UK='kodachi_v3_users', SCHED_K='kodachi_v3_sched';
+const SYNC_TS='kodachi_v3_syncts', SYNCINT_K='kodachi_v3_syncint';
+const STOK_K='kodachi_v5_stok', STOK_TS_K='kodachi_v5_stok_ts', MAP_K='kodachi_v5_mapping';
+
+// ================================================================
+// DEFAULT MAPPING KOLOM
+// Field yang tersedia untuk dikirim ke sheet
+// ================================================================
+const AVAILABLE_FIELDS = [
+  {key:'notaId',    label:'Nota ID'},
+  {key:'waktu',     label:'Waktu'},
+  {key:'kasir',     label:'Kasir'},
+  {key:'payment',   label:'Payment'},
+  {key:'produk',    label:'Produk'},
+  {key:'ukuran',    label:'Ukuran/Size'},
+  {key:'qty',       label:'Qty'},
+  {key:'harga',     label:'Harga Satuan'},
+  {key:'subtotal',  label:'Subtotal'},
+  {key:'totalBayar',label:'Total Bayar'},
+  {key:'kembalian', label:'Kembalian'},
+  {key:'type',      label:'Tipe'},
+  {key:'saldoAwal', label:'Saldo Awal'},
+  {key:'saldoAkhir',label:'Saldo Akhir'},
+  {key:'(kosong)',  label:'— Kosong —'},
+];
+
+const DEFAULT_MAPPING = [
+  'notaId','waktu','kasir','payment','produk','ukuran',
+  'qty','harga','subtotal','totalBayar','kembalian','type',
+  'saldoAwal','saldoAkhir'
+];
+
+function getMapping(){
+  try{const m=JSON.parse(localStorage.getItem(MAP_K)||'null');if(m&&m.length)return m;}catch{}
+  return [...DEFAULT_MAPPING];
+}
+function saveMapping(m){localStorage.setItem(MAP_K,JSON.stringify(m));}
+
+function buildRowFromMapping(r, mapping){
+  return mapping.map(key=>{
+    if(!key||key==='(kosong)')return '';
+    if(key==='saldoAwal')return parseFloat(document.getElementById('saldoAwal')?.value)||r.saldoAwal||0;
+    if(key==='saldoAkhir')return parseFloat(document.getElementById('saldoAkhir')?.value)||r.saldoAkhir||0;
+    return r[key]??'';
+  });
+}
 
 // ================================================================
 // UTILS
@@ -559,6 +686,139 @@ function closeMod(id){document.getElementById(id).classList.add('hidden');}
 function toast(msg,cls='t-ok'){
   const el=document.getElementById('toastEl');el.textContent=msg;el.className='toast '+cls;el.classList.remove('hidden');
   clearTimeout(el._t);el._t=setTimeout(()=>el.classList.add('hidden'),3200);
+}
+
+// ================================================================
+// STOK DATA
+// ================================================================
+let stokData = {}; // key: "NamaProduk" atau "NamaProduk|Size" => jumlah
+let stokLoaded = false;
+
+function getStokKey(nama, size){
+  const n=(nama||'').trim();
+  const s=(size||'').trim();
+  if(s) return `${n}|${s}`;
+  return n;
+}
+
+function getStok(nama, size){
+  if(!stokLoaded) return null; // belum load
+  const k1 = getStokKey(nama, size);
+  const k2 = (nama||'').trim();
+  if(stokData[k1]!==undefined) return stokData[k1];
+  if(stokData[k2]!==undefined) return stokData[k2];
+  return null;
+}
+
+function stokClass(n){
+  if(n===null) return 'stok-na';
+  if(n===0) return 'stok-kosong';
+  if(n<=3) return 'stok-low';
+  return 'stok-ada';
+}
+function stokLabel(n){
+  if(n===null) return '?';
+  if(n===0) return 'KOSONG';
+  if(n<=3) return `TIPIS (${n})`;
+  return `OK (${n})`;
+}
+
+async function syncStok(){
+  const el=document.getElementById('stokStatus');
+  el.textContent='📦 LOADING...';el.className='stok-badge stok-loading';
+  try{
+    // Fetch sheet Stock via GAS endpoint getStock
+    const url=`${APPS_URL}?action=getStock&sheetName=${encodeURIComponent(STOCK_SHEET_NAME)}`;
+    const res=await fetch(url);
+    const json=await res.json();
+    if(json.status==='ok'&&json.stok){
+      stokData=json.stok;
+      stokLoaded=true;
+      localStorage.setItem(STOK_K,JSON.stringify(stokData));
+      const ts=new Date().toLocaleString('id-ID');
+      localStorage.setItem(STOK_TS_K,ts);
+      const el2=document.getElementById('stokLastUpdate');
+      if(el2)el2.textContent='Update: '+ts;
+      const total=Object.keys(stokData).length;
+      const kosong=Object.values(stokData).filter(v=>v===0).length;
+      el.textContent=`📦 STOK (${kosong} kosong)`;
+      el.className=`stok-badge ${kosong>0?'stok-err':'stok-ok'}`;
+      addSyncLog(`✓ Stok: ${total} item, ${kosong} kosong`);
+      toast(`✓ Stok diperbarui (${total} item)`,'t-ok');
+      renderItems(); // refresh tampilan nota
+      renderStokTab();
+    }else{
+      throw new Error(json.message||'Gagal baca stok');
+    }
+  }catch(e){
+    el.textContent='📦 STOK ERR';el.className='stok-badge stok-err';
+    // Coba load dari cache
+    try{
+      const cached=JSON.parse(localStorage.getItem(STOK_K)||'null');
+      if(cached){stokData=cached;stokLoaded=true;toast('⚠ Pakai cache stok lama','t-info');}
+      else toast('Gagal load stok: '+e.message,'t-err');
+    }catch{}
+    addSyncLog('✗ Stok gagal: '+e.message);
+  }
+}
+
+function renderStokTab(){
+  const q=(document.getElementById('stokSearch')||{value:''}).value.toLowerCase();
+  const f=(document.getElementById('stokFilter')||{value:''}).value;
+  const el=document.getElementById('stokTabContent');
+  if(!stokLoaded||!Object.keys(stokData).length){
+    el.innerHTML='<div style="color:var(--txt3);font-size:12px;font-family:var(--mono);padding:20px 0;">Belum ada data stok. Klik REFRESH STOK.</div>';
+    return;
+  }
+  // Group by nama produk
+  const byProduk={};
+  Object.entries(stokData).forEach(([key,val])=>{
+    const parts=key.split('|');
+    const nama=parts[0];
+    const size=parts[1]||'';
+    if(!byProduk[nama])byProduk[nama]={sizes:{},total:0};
+    if(size){byProduk[nama].sizes[size]=val;}
+    else{byProduk[nama].total=val;}
+  });
+
+  // Filter
+  let entries=Object.entries(byProduk).filter(([nama])=>!q||nama.toLowerCase().includes(q));
+  entries=entries.filter(([nama,data])=>{
+    const total=data.total||Object.values(data.sizes).reduce((s,v)=>s+v,0);
+    if(f==='kosong')return total===0;
+    if(f==='low')return total>0&&total<=3;
+    if(f==='ada')return total>3;
+    return true;
+  });
+  entries.sort((a,b)=>a[0].localeCompare(b[0]));
+
+  if(!entries.length){el.innerHTML='<div style="color:var(--txt3);font-size:12px;font-family:var(--mono);padding:20px 0;">Tidak ada produk yang cocok.</div>';return;}
+
+  let html='<table class="ltbl" style="min-width:400px;"><thead><tr><th>PRODUK</th><th>SIZE</th><th style="text-align:right;">STOK</th><th>STATUS</th></tr></thead><tbody>';
+  entries.forEach(([nama,data])=>{
+    if(Object.keys(data.sizes).length>0){
+      Object.entries(data.sizes).sort((a,b)=>parseFloat(a[0])-parseFloat(b[0])).forEach(([size,val],si)=>{
+        const sc=stokClass(val);
+        html+=`<tr>
+          <td style="font-weight:${si===0?'600':'400'};color:${si===0?'var(--navy)':'var(--txt3)'};">${si===0?esc(nama):''}</td>
+          <td style="text-align:center;font-family:var(--mono);">${esc(size)}</td>
+          <td style="text-align:right;font-weight:700;font-family:var(--mono);">${val}</td>
+          <td><span class="aci-stok ${sc}">${stokLabel(val)}</span></td>
+        </tr>`;
+      });
+    } else {
+      const val=data.total;
+      const sc=stokClass(val);
+      html+=`<tr>
+        <td style="font-weight:600;color:var(--navy);">${esc(nama)}</td>
+        <td style="text-align:center;color:var(--txt3);font-size:10px;font-family:var(--mono);">—</td>
+        <td style="text-align:right;font-weight:700;font-family:var(--mono);">${val}</td>
+        <td><span class="aci-stok ${sc}">${stokLabel(val)}</span></td>
+      </tr>`;
+    }
+  });
+  html+='</tbody></table>';
+  el.innerHTML=html;
 }
 
 // ================================================================
@@ -583,19 +843,23 @@ function doLogin(){
   const found=getUsers().find(u=>u.username.toLowerCase()===un&&u.password===pw);
   if(!found){document.getElementById('loginErr').style.display='block';return;}
   CU=found;document.getElementById('loginErr').style.display='none';
-  document.getElementById('loginScreen').classList.add('hidden');document.getElementById('appShell').classList.remove('hidden');
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('appShell').classList.remove('hidden');
   afterLogin();
 }
 function doLogout(){
   CU=null;
-  document.getElementById('loginScreen').classList.remove('hidden');document.getElementById('appShell').classList.add('hidden');
-  document.getElementById('loginUser').value='';document.getElementById('loginPass').value='';
+  document.getElementById('loginScreen').classList.remove('hidden');
+  document.getElementById('appShell').classList.add('hidden');
+  document.getElementById('loginUser').value='';
+  document.getElementById('loginPass').value='';
   if(syncIntervalId){clearInterval(syncIntervalId);syncIntervalId=null;}
 }
 function afterLogin(){
   document.getElementById('topUser').textContent=CU.display+(CU.role==='admin'?' [ADMIN]':'');
   document.querySelectorAll('.admin-only').forEach(el=>el.classList.toggle('hidden',CU.role!=='admin'));
-  refreshKasirDropdowns();initApp();
+  refreshKasirDropdowns();
+  initApp();
 }
 function refreshKasirDropdowns(){
   const disp=document.getElementById('kasirDisplay'),hid=document.getElementById('kasirSelect');
@@ -623,8 +887,25 @@ function initApp(){
   generateNotaId();setTodayDate();items=[];itemCounter=0;
   for(let i=0;i<20;i++)items.push({id:itemCounter++,name:'',detil:'',qty:'',price:0});
   renderItems();calcAll();updateSyncStatus();startAutoSync();checkSchedule();
-  renderLogTable();renderUangHistory();if(CU.role==='admin')renderAdminPanel();
+  renderLogTable();renderUangHistory();
+  if(CU.role==='admin'){renderAdminPanel();renderMappingUI();}
+  // Load stok dari cache dulu, lalu refresh
+  try{
+    const cached=JSON.parse(localStorage.getItem(STOK_K)||'null');
+    if(cached){
+      stokData=cached;stokLoaded=true;
+      const ts=localStorage.getItem(STOK_TS_K)||'';
+      const el2=document.getElementById('stokLastUpdate');if(el2)el2.textContent=ts?'Cache: '+ts:'';
+      const kosong=Object.values(stokData).filter(v=>v===0).length;
+      const total=Object.keys(stokData).length;
+      const badge=document.getElementById('stokStatus');
+      badge.textContent=`📦 STOK (${kosong} kosong)`;
+      badge.className=`stok-badge ${kosong>0?'stok-err':'stok-ok'}`;
+    }
+  }catch{}
+  setTimeout(()=>syncStok(),1500); // auto refresh stok setelah login
 }
+
 function generateNotaId(){
   const now=new Date(),p=n=>String(n).padStart(2,'0');
   const id=`NT${String(now.getFullYear()).slice(2)}${p(now.getMonth()+1)}${p(now.getDate())}${p(now.getHours())}${p(now.getMinutes())}`;
@@ -646,33 +927,61 @@ function setTodayDate(){
 function switchTab(tab){
   document.querySelectorAll('.stab').forEach(t=>t.classList.toggle('active',t.dataset.tab===tab));
   document.getElementById('tab-input').style.display=tab==='input'?'flex':'none';
-  ['uang','log','admin'].forEach(t=>{
+  ['uang','log','stok','admin'].forEach(t=>{
     const el=document.getElementById('tab-'+t);if(el)el.classList.toggle('active',t===tab);
   });
   if(tab==='log')renderLogTable();
   if(tab==='uang')renderUangHistory();
-  if(tab==='admin'&&CU&&CU.role==='admin')renderAdminPanel();
+  if(tab==='stok')renderStokTab();
+  if(tab==='admin'&&CU&&CU.role==='admin'){renderAdminPanel();renderMappingUI();}
 }
 
 // ================================================================
 // ITEMS / NOTA
 // ================================================================
 function addItem(){items.push({id:itemCounter++,name:'',detil:'',qty:'',price:0});renderItems();}
+
 function renderItems(){
   const tbody=document.getElementById('itemsBody');tbody.innerHTML='';
   items.forEach((item,idx)=>{
+    const stokVal=item.name?getStok(item.name,item.detil):null;
+    const isKosong=stokVal===0;
     const tr=document.createElement('tr');
+    if(isKosong)tr.className='stok-warn-row';
     tr.innerHTML=`<td class="no">${idx+1}</td>
     <td style="padding:0;"><div class="acw">
       <input class="ii" id="iname-${item.id}" value="${esc(item.name)}" placeholder="${idx===0?'Nama barang...':''}" oninput="filterAC(${item.id},this.value)" onblur="hideAC(${item.id})" autocomplete="off">
       <div class="acl hidden" id="ac-${item.id}"></div>
-    </div></td>
-    <td style="padding:0;"><input class="ii" id="idetil-${item.id}" value="${esc(item.detil)}" oninput="updF(${item.id},'detil',this.value)" style="text-align:center;" placeholder="size"></td>
+    </div>
+    ${isKosong?'<span class="stok-warn-badge">⚠ STOK KOSONG!</span>':''}
+    </td>
+    <td style="padding:0;"><input class="ii" id="idetil-${item.id}" value="${esc(item.detil)}" oninput="updF(${item.id},'detil',this.value);checkStokWarn(${item.id})" style="text-align:center;" placeholder="size"></td>
     <td style="padding:0;"><input class="ii" type="number" id="iqty-${item.id}" value="${item.qty}" oninput="updF(${item.id},'qty',this.value)" style="text-align:center;" min="1"></td>
     <td class="sc" id="isub-${item.id}">${item.name&&item.qty?fmt(item.price*(parseFloat(item.qty)||0)):''}</td>`;
     tbody.appendChild(tr);
   });
 }
+
+function checkStokWarn(id){
+  // Re-render baris yg relevan saja
+  const item=items.find(i=>i.id===id);
+  if(!item)return;
+  const stokVal=item.name?getStok(item.name,item.detil):null;
+  const tr=document.getElementById(`iname-${id}`)?.closest('tr');
+  if(!tr)return;
+  if(stokVal===0){
+    tr.className='stok-warn-row';
+    // tambah badge jika belum ada
+    const td=tr.cells[1];
+    if(td&&!td.querySelector('.stok-warn-badge')){
+      const b=document.createElement('span');b.className='stok-warn-badge';b.textContent='⚠ STOK KOSONG!';td.appendChild(b);
+    }
+  }else{
+    tr.className='';
+    const badge=tr.querySelector('.stok-warn-badge');if(badge)badge.remove();
+  }
+}
+
 function updF(id,field,val){
   const item=items.find(i=>i.id===id);if(!item)return;
   item[field]=val;
@@ -680,6 +989,7 @@ function updF(id,field,val){
   if(sub)sub.textContent=(item.name&&item.qty)?fmt(item.price*(parseFloat(item.qty)||0)):'';
   calcAll();
 }
+
 function filterAC(id,q){
   clearTimeout(acTimers[id]);
   acTimers[id]=setTimeout(()=>{
@@ -688,10 +998,20 @@ function filterAC(id,q){
     if(!q.trim()){ac.classList.add('hidden');calcAll();return;}
     const res=PRODUCTS.filter(p=>p.n.toLowerCase().includes(q.toLowerCase())).slice(0,16);
     if(!res.length){ac.classList.add('hidden');calcAll();return;}
-    ac.innerHTML=res.map(p=>`<div class="aci" onmousedown="selProd(${id},'${p.n.replace(/'/g,"\\'")}',${p.h})"><span>${p.n}</span><span class="acp">${fmt(p.h)}</span></div>`).join('');
+    // Tampilkan dengan info stok
+    ac.innerHTML=res.map(p=>{
+      const sv=getStok(p.n,'');
+      const sc=stokClass(sv);
+      const sl=sv!==null?`<span class="aci-stok ${sc}">${stokLabel(sv)}</span>`:'';
+      return `<div class="aci" onmousedown="selProd(${id},'${p.n.replace(/'/g,"\\'")}',${p.h})">
+        <span>${p.n}</span>
+        <span style="display:flex;align-items:center;gap:6px;">${sl}<span class="acp">${fmt(p.h)}</span></span>
+      </div>`;
+    }).join('');
     ac.classList.remove('hidden');
   },100);
 }
+
 function selProd(id,name,price){
   const item=items.find(i=>i.id===id);if(!item)return;
   item.name=name;item.price=price;
@@ -699,10 +1019,27 @@ function selProd(id,name,price){
   const sub=document.getElementById(`isub-${id}`);if(sub)sub.textContent=item.qty?fmt(price*(parseFloat(item.qty)||0)):'';
   const ac=document.getElementById(`ac-${id}`);if(ac)ac.classList.add('hidden');
   const qel=document.getElementById(`iqty-${id}`);if(qel&&!item.qty){qel.value='1';item.qty=1;}
+  // Cek stok setelah pilih produk
+  const stokVal=getStok(name,'');
+  if(stokVal===0){
+    toast(`⚠ STOK ${name} KOSONG!`,'t-err');
+    const tr=inp?.closest('tr');
+    if(tr){
+      tr.className='stok-warn-row';
+      const td=tr.cells[1];
+      if(td&&!td.querySelector('.stok-warn-badge')){
+        const b=document.createElement('span');b.className='stok-warn-badge';b.textContent='⚠ STOK KOSONG!';td.appendChild(b);
+      }
+    }
+  }else if(stokVal!==null&&stokVal<=3){
+    toast(`⚠ Stok ${name} tinggal ${stokVal}!`,'t-info');
+  }
   calcAll();
 }
+
 function hideAC(id){setTimeout(()=>{const a=document.getElementById(`ac-${id}`);if(a)a.classList.add('hidden');},200);}
 function setPayment(val){currentPayment=val;document.getElementById('payLabel').textContent=val;calcAll();}
+
 function calcAll(){
   const total=items.reduce((s,i)=>s+(i.price||0)*(parseFloat(i.qty)||0),0);
   const uang=parseFloat(document.getElementById('uangBayarInp').value)||0,kem=uang-total;
@@ -720,7 +1057,7 @@ function calcAll(){
 }
 
 // ================================================================
-// PRINT NOTA — sekaligus simpan & sync ke LogNota
+// PRINT NOTA
 // ================================================================
 function printNota(){
   const notaId=document.getElementById('notaIdDisplay').textContent;
@@ -729,29 +1066,34 @@ function printNota(){
   const filled=items.filter(i=>i.name&&(parseFloat(i.qty)||0)>0);
   if(!filled.length){toast('Tambah minimal 1 barang!','t-err');return;}
 
+  // Cek stok kosong — warning tapi tetap bisa lanjut
+  const kosongItems=filled.filter(i=>{const sv=getStok(i.name,i.detil);return sv===0;});
+  if(kosongItems.length>0){
+    const names=kosongItems.map(i=>i.name).join(', ');
+    if(!confirm(`⚠ STOK KOSONG:\n${names}\n\nTetap lanjut transaksi?`))return;
+  }
+
   const total=filled.reduce((s,i)=>s+i.price*(parseFloat(i.qty)||0),0);
   const uangBayar=parseFloat(document.getElementById('uangBayarInp').value)||0;
   const kem=uangBayar-total;
+  const mapping=getMapping();
+  const saldoA=parseFloat(document.getElementById('saldoAwal').value)||0;
+  const saldoAk=parseFloat(document.getElementById('saldoAkhir').value)||0;
 
-  // ── 1. Simpan ke log lokal ──────────────────────────────────
   const rows=filled.map(i=>({
     notaId,waktu:now.toISOString(),kasir,payment:currentPayment,
     produk:i.name,ukuran:i.detil,qty:parseFloat(i.qty)||0,harga:i.price,
     subtotal:i.price*(parseFloat(i.qty)||0),totalBayar:total,kembalian:kem,
-    type:detectType(i.name),saldoAwal:parseFloat(document.getElementById('saldoAwal').value)||0,
-    saldoAkhir:parseFloat(document.getElementById('saldoAkhir').value)||0
+    type:detectType(i.name),saldoAwal:saldoA,saldoAkhir:saldoAk
   }));
+
   saveLocal({notaId,waktu:now.toISOString(),kasir,payment:currentPayment,rows,total,uangBayar,kembalian:kem,synced:false,ts:now.getTime()});
+  kirimKeLogNota(rows,now,notaId,kasir,total,uangBayar,kem,mapping);
 
-  // ── 2. Langsung kirim ke LogNota spreadsheet ────────────────
-  kirimKeLogNota(rows,now,notaId,kasir,total,uangBayar,kem);
-
-  // ── 3. Tampilkan preview print ──────────────────────────────
   const html=buildPrintHTML(notaId,kasir,now,filled,total,uangBayar,kem);
   document.getElementById('printArea').innerHTML=html;
   document.getElementById('modalPrint').classList.remove('hidden');
-
-  toast(`✓ ${notaId} tersimpan & dikirim ke log`,'t-ok');
+  toast(`✓ ${notaId} tersimpan & dikirim`,'t-ok');
   renderLogTable();
 }
 
@@ -786,43 +1128,19 @@ function buildPrintHTML(notaId,kasir,now,filled,total,uangBayar,kem){
   return html;
 }
 
-// ── Kirim langsung ke sheet LogNota setiap kali print ──────────
-async function kirimKeLogNota(rows,now,notaId,kasir,total,uangBayar,kem){
-  // Payload: array baris untuk sheet LogNota
-  // Kolom disesuaikan dengan struktur sheet yang ada:
-  // Timestamp | Nota ID | Kasir | Payment | Produk | Ukuran | Qty | Harga | Subtotal | Total Bayar | Kembalian | Tipe
-  const logRows = rows.map(r => [
-    now.toISOString(),    // A - Timestamp
-    r.notaId,             // B - Nota ID
-    r.kasir,              // C - Kasir
-    r.payment,            // D - Payment
-    r.produk,             // E - Produk
-    r.ukuran||'',         // F - Ukuran/Detil
-    r.qty,                // G - Qty
-    r.harga,              // H - Harga Satuan
-    r.subtotal,           // I - Subtotal
-    r.totalBayar,         // J - Total Bayar
-    r.kembalian,          // K - Kembalian
-    r.type                // L - Tipe
-  ]);
-
+async function kirimKeLogNota(rows,now,notaId,kasir,total,uangBayar,kem,mapping){
+  const m=mapping||getMapping();
+  const logRows=rows.map(r=>buildRowFromMapping(r,m));
   try{
-    const resp = await fetch(LOG_NOTA_URL, {
-      method: 'POST',
-      body: JSON.stringify({
-        action: 'appendLogNota',
-        sheetName: LOG_NOTA_SHEET_NAME,
-        rows: logRows
-      }),
-      headers: {'Content-Type':'text/plain'}
+    const resp=await fetch(LOG_NOTA_URL,{
+      method:'POST',
+      body:JSON.stringify({action:'appendLogNota',sheetName:LOG_NOTA_SHEET_NAME,rows:logRows}),
+      headers:{'Content-Type':'text/plain'}
     });
-    const json = await resp.json();
-    if(json.status==='ok'){
-      addSyncLog(`✓ LogNota: ${notaId} (${logRows.length} baris)`);
-    } else {
-      addSyncLog(`⚠ LogNota error: ${json.message||'unknown'}`);
-    }
-  } catch(e){
+    const json=await resp.json();
+    if(json.status==='ok'){addSyncLog(`✓ LogNota: ${notaId} (${logRows.length} baris)`);}
+    else{addSyncLog(`⚠ LogNota error: ${json.message||'unknown'}`);}
+  }catch(e){
     addSyncLog(`✗ LogNota gagal: ${e.message}`);
     toast('⚠ Gagal kirim ke LogNota — tersimpan lokal','t-info');
   }
@@ -835,6 +1153,7 @@ function detectType(name){
   if(n.includes('uang keluar'))return'uang keluar';
   return'jual';
 }
+
 function resetNota(){
   items=[];itemCounter=0;
   document.getElementById('uangBayarInp').value='';
@@ -844,59 +1163,78 @@ function resetNota(){
   for(let i=0;i<20;i++)items.push({id:itemCounter++,name:'',detil:'',qty:'',price:0});
   renderItems();calcAll();
 }
+
 function doBatal(){document.getElementById('modalBatal').classList.remove('hidden');}
 async function confirmBatal(){
   const nno=document.getElementById('batalNotaInp').value.trim();
   if(!nno){toast('Masukkan nomer nota!','t-err');return;}
   closeMod('modalBatal');
   const notaId=generateNotaId(),now=new Date(),kasir=getKasir();
-  const row={notaId,waktu:now.toISOString(),kasir,payment:'CASH',produk:`BATAL - ${nno}`,ukuran:'',qty:1,harga:0,subtotal:0,totalBayar:0,kembalian:0,type:'batal'};
+  const row={notaId,waktu:now.toISOString(),kasir,payment:'CASH',produk:`BATAL - ${nno}`,ukuran:'',qty:1,harga:0,subtotal:0,totalBayar:0,kembalian:0,type:'batal',saldoAwal:0,saldoAkhir:0};
   saveLocal({notaId,waktu:now.toISOString(),kasir,payment:'CASH',rows:[row],total:0,uangBayar:0,kembalian:0,synced:false,ts:now.getTime()});
-  // Kirim batal ke LogNota juga
   kirimKeLogNota([row],now,notaId,kasir,0,0,0);
   toast(`Nota ${nno} dibatalkan`,'t-ok');renderLogTable();
   document.getElementById('batalNotaInp').value='';
 }
-function doTukar(){toast('Mode Tukar: input barang pengganti di baris nota, pakai keterangan di saldo/nota','t-info');}
+function doTukar(){toast('Mode Tukar: input barang pengganti di baris nota','t-info');}
 
 // ================================================================
-// UANG
+// UANG (+ AKTUAL)
 // ================================================================
 function setUangType(t){
   uangType=t;
-  document.getElementById('ubtn-masuk').className='utype-btn masuk'+(t==='masuk'?' active':'');
-  document.getElementById('ubtn-keluar').className='utype-btn keluar'+(t==='keluar'?' active':'');
+  ['masuk','keluar','aktual'].forEach(x=>{
+    document.getElementById(`ubtn-${x}`).className=`utype-btn ${x}${t===x?' active':''}`;
+  });
+  const note=document.getElementById('aktualNote');
+  if(note)note.classList.toggle('hidden',t!=='aktual');
+  const lbl=document.getElementById('uangJumlahLabel');
+  if(lbl)lbl.textContent=t==='aktual'?'JUMLAH AKTUAL DI LACI (Rp)':'JUMLAH (Rp)';
 }
+
 async function submitUang(){
   const ket=document.getElementById('uangKet').value.trim();
   const jml=parseFloat(document.getElementById('uangJumlah').value)||0;
   const kasir=document.getElementById('uangKasir').value;
   if(!jml){toast('Masukkan jumlah!','t-err');return;}
   const now=new Date(),p=n=>String(n).padStart(2,'0');
-  const notaId=`NU${String(now.getFullYear()).slice(2)}${p(now.getMonth()+1)}${p(now.getDate())}${p(now.getHours())}${p(now.getMinutes())}${p(now.getSeconds())}`;
-  const type=`uang ${uangType}`,nama=`${type}${ket?' - '+ket:''}`;
-  const row={notaId,waktu:now.toISOString(),kasir,payment:'CASH',produk:nama,ukuran:'',qty:1,harga:jml,subtotal:jml,totalBayar:jml,kembalian:0,type};
+  const pfx=uangType==='aktual'?'NA':'NU';
+  const notaId=`${pfx}${String(now.getFullYear()).slice(2)}${p(now.getMonth()+1)}${p(now.getDate())}${p(now.getHours())}${p(now.getMinutes())}${p(now.getSeconds())}`;
+  const type=uangType==='aktual'?'aktual':`uang ${uangType}`;
+  const nama=uangType==='aktual'?`Aktual Kas${ket?' - '+ket:''}`:`${type}${ket?' - '+ket:''}`;
+  const row={notaId,waktu:now.toISOString(),kasir,payment:'CASH',produk:nama,ukuran:'',qty:1,harga:jml,subtotal:jml,totalBayar:jml,kembalian:0,type,saldoAwal:0,saldoAkhir:0};
   saveLocal({notaId,waktu:now.toISOString(),kasir,payment:'CASH',rows:[row],total:jml,uangBayar:jml,kembalian:0,synced:false,ts:now.getTime()});
-  toast(`✓ ${uangType==='masuk'?'Uang Masuk':'Uang Keluar'} Rp ${fmt(jml)}`,'t-ok');
+  toast(`✓ ${uangType==='aktual'?'Aktual':'Uang '+uangType} Rp ${fmt(jml)}`,'t-ok');
   document.getElementById('uangKet').value='';document.getElementById('uangJumlah').value='';
   renderUangHistory();renderLogTable();
   setTimeout(()=>syncNow(true),400);
 }
+
 function renderUangHistory(){
   const logs=getLocalLogs(),today=new Date().toDateString(),ul=[];
-  logs.forEach(n=>(n.rows||[]).forEach(r=>{if((r.type==='uang masuk'||r.type==='uang keluar')&&new Date(r.waktu).toDateString()===today)ul.push(r);}));
+  logs.forEach(n=>(n.rows||[]).forEach(r=>{
+    if(['uang masuk','uang keluar','aktual'].includes(r.type)&&new Date(r.waktu).toDateString()===today)ul.push(r);
+  }));
   const el=document.getElementById('uangHistoryList');
   if(!ul.length){el.innerHTML='<div style="color:var(--txt3);font-size:11px;padding:8px 0;font-family:var(--mono);">Belum ada hari ini.</div>';document.getElementById('uangSummary').innerHTML='';return;}
   ul.sort((a,b)=>new Date(b.waktu)-new Date(a.waktu));
-  el.innerHTML=ul.map(r=>`<div class="uang-item ${r.type==='uang masuk'?'masuk':'keluar'}">
-    <span style="font-size:15px;">${r.type==='uang masuk'?'+':'-'}</span>
-    <span style="font-weight:500;">${r.produk||''}</span>
-    <span class="${r.type==='uang masuk'?'jml-m':'jml-k'}">${r.type==='uang masuk'?'+':'-'} Rp ${fmt(r.harga||0)}</span>
-    <span style="font-size:10px;color:var(--txt3);">${new Date(r.waktu).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}</span>
-  </div>`).join('');
+  el.innerHTML=ul.map(r=>{
+    let icon='+',cls='masuk',jmlCls='jml-m';
+    if(r.type==='uang keluar'){icon='-';cls='keluar';jmlCls='jml-k';}
+    else if(r.type==='aktual'){icon='≡';cls='aktual';jmlCls='jml-a';}
+    return `<div class="uang-item ${cls}">
+      <span style="font-size:15px;">${icon}</span>
+      <span style="font-weight:500;">${r.produk||''}</span>
+      <span class="${jmlCls}">${r.type==='aktual'?'':'r.type==="uang keluar"?"-":"+"}Rp ${fmt(r.harga||0)}</span>
+      <span style="font-size:10px;color:var(--txt3);">${new Date(r.waktu).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}</span>
+    </div>`;
+  }).join('');
   const tm=ul.filter(r=>r.type==='uang masuk').reduce((s,r)=>s+(r.harga||0),0);
   const tk=ul.filter(r=>r.type==='uang keluar').reduce((s,r)=>s+(r.harga||0),0);
-  document.getElementById('uangSummary').innerHTML=`Masuk: <b style="color:var(--green);">Rp ${fmt(tm)}</b> &nbsp;·&nbsp; Keluar: <b style="color:var(--red);">Rp ${fmt(tk)}</b> &nbsp;·&nbsp; Selisih: <b style="color:var(--navy);">Rp ${fmt(tm-tk)}</b>`;
+  const ta=ul.filter(r=>r.type==='aktual');
+  let sumHtml=`Masuk: <b style="color:var(--green);">Rp ${fmt(tm)}</b> &nbsp;·&nbsp; Keluar: <b style="color:var(--red);">Rp ${fmt(tk)}</b> &nbsp;·&nbsp; Selisih: <b style="color:var(--navy);">Rp ${fmt(tm-tk)}</b>`;
+  if(ta.length){const lastAk=ta[ta.length-1];sumHtml+=` &nbsp;·&nbsp; Aktual terakhir: <b style="color:var(--blue);">Rp ${fmt(lastAk.harga)}</b>`;}
+  document.getElementById('uangSummary').innerHTML=sumHtml;
 }
 
 // ================================================================
@@ -920,7 +1258,9 @@ async function syncNow(silent=false){
   const logs=getLocalLogs(),pending=logs.filter(l=>!l.synced);
   if(!pending.length){if(!silent)toast('Tidak ada data pending','t-info');return;}
   if(!silent)toast('Syncing...','t-info');
-  const allRows=[];pending.forEach(n=>(n.rows||[]).forEach(r=>allRows.push(r)));
+  const mapping=getMapping();
+  const allRows=[];
+  pending.forEach(n=>(n.rows||[]).forEach(r=>allRows.push(buildRowFromMapping(r,mapping))));
   try{
     const res=await fetch(APPS_URL,{method:'POST',body:JSON.stringify({rows:allRows}),headers:{'Content-Type':'text/plain'}});
     const json=await res.json();
@@ -933,8 +1273,10 @@ async function syncNow(silent=false){
       const le=document.getElementById('lastSyncTime');if(le)le.textContent=ts;
     }else throw new Error(json.message||'error');
   }catch(e){
-    document.getElementById('syncStatus').textContent='● ERROR';document.getElementById('syncStatus').className='sync-ind s-err';
-    if(!silent)toast('Gagal sync: '+e.message,'t-err');addSyncLog('✗ gagal: '+e.message);
+    document.getElementById('syncStatus').textContent='● ERROR';
+    document.getElementById('syncStatus').className='sync-ind s-err';
+    if(!silent)toast('Gagal sync: '+e.message,'t-err');
+    addSyncLog('✗ gagal: '+e.message);
   }
 }
 function addSyncLog(msg){
@@ -975,11 +1317,58 @@ function renderLogTable(){
   if(!filtered.length){const tr=document.createElement('tr');tr.innerHTML='<td colspan="13" style="padding:16px;text-align:center;color:var(--txt3);">Tidak ada data.</td>';tbody.appendChild(tr);}
   const lc=document.getElementById('logCount');if(lc)lc.textContent=`${filtered.length} baris`;
 }
+
 function exportLog(){
   const rows=[];getLocalLogs().forEach(n=>(n.rows||[]).forEach(r=>rows.push(r)));
-  const h=['notaId','waktu','kasir','payment','produk','ukuran','qty','harga','subtotal','totalBayar','kembalian','type'];
+  const h=['notaId','waktu','kasir','payment','produk','ukuran','qty','harga','subtotal','totalBayar','kembalian','type','saldoAwal','saldoAkhir'];
   const csv=[h.join(','),...rows.map(r=>h.map(k=>JSON.stringify(r[k]??'')).join(','))].join('\n');
   const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download=`kodachi_log_${Date.now()}.csv`;a.click();
+}
+
+// ================================================================
+// MAPPING KOLOM UI
+// ================================================================
+function renderMappingUI(){
+  const el=document.getElementById('mappingUI');if(!el)return;
+  const mapping=getMapping();
+  const cols='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  let html='<table class="map-table"><thead><tr><th style="width:40px;">KOLOM</th><th>FIELD YANG DIKIRIM</th></tr></thead><tbody>';
+  // Tampilkan sebanyak mapping + 2 ekstra kosong
+  const total=mapping.length+2;
+  for(let i=0;i<total;i++){
+    const letter=cols[i]||`K${i+1}`;
+    const cur=mapping[i]||'(kosong)';
+    const opts=AVAILABLE_FIELDS.map(f=>`<option value="${f.key}"${f.key===cur?' selected':''}>${f.label}</option>`).join('');
+    html+=`<tr><td class="col-letter">${letter}</td><td><select id="map-sel-${i}">${opts}</select></td></tr>`;
+  }
+  html+='</tbody></table>';
+  el.innerHTML=html;
+  const info=document.getElementById('mappingInfo');
+  if(info)info.textContent=`Mapping aktif: ${mapping.length} kolom. Field "(kosong)" = kolom dikosongkan.`;
+}
+
+function saveMappingConfig(){
+  const cols='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  const mapping=[];
+  let i=0;
+  while(document.getElementById(`map-sel-${i}`)){
+    const v=document.getElementById(`map-sel-${i}`).value;
+    if(v&&v!=='(kosong)')mapping.push(v);
+    else if(v==='(kosong)')mapping.push('(kosong)');
+    i++;
+  }
+  // Trim trailing kosong
+  while(mapping.length&&mapping[mapping.length-1]==='(kosong)')mapping.pop();
+  saveMapping(mapping);
+  toast(`✓ Mapping ${mapping.length} kolom disimpan`,'t-ok');
+  const info=document.getElementById('mappingInfo');
+  if(info)info.textContent=`Mapping aktif: ${mapping.length} kolom. Berlaku untuk sync & LogNota berikutnya.`;
+}
+
+function resetMappingConfig(){
+  saveMapping([...DEFAULT_MAPPING]);
+  renderMappingUI();
+  toast('Mapping direset ke default','t-info');
 }
 
 // ================================================================
@@ -1052,42 +1441,7 @@ function deleteUser(idx){const users=getUsers();if(!confirm(`Hapus akun ${users[
 // BOOT
 // ================================================================
 document.getElementById('tab-input').style.display='flex';
-['uang','log','admin'].forEach(t=>{const el=document.getElementById('tab-'+t);if(el)el.classList.remove('active');});
+['uang','log','stok','admin'].forEach(t=>{const el=document.getElementById('tab-'+t);if(el)el.classList.remove('active');});
 </script>
-
-<!--
-=================================================================
-GOOGLE APPS SCRIPT — Deploy untuk endpoint LogNota
-=================================================================
-Buat Apps Script baru di spreadsheet Kodachi, lalu paste kode ini,
-deploy sebagai Web App (Execute as: Me, Access: Anyone).
-Ganti LOG_NOTA_URL di atas dengan URL deploy baru.
-
-function doPost(e) {
-  try {
-    var data = JSON.parse(e.postData.contents);
-    if (data.action !== 'appendLogNota') return ContentService.createTextOutput(JSON.stringify({status:'skip'})).setMimeType(ContentService.MimeType.JSON);
-    
-    var ss = SpreadsheetApp.openById('1gJtL8Qr65ZXy5aNW4WWz1umKdSkFjGTZdPq7xfnJbfI');
-    var sheet = ss.getSheetByName(data.sheetName || 'LogNota');
-    if (!sheet) return ContentService.createTextOutput(JSON.stringify({status:'error',message:'Sheet tidak ditemukan'})).setMimeType(ContentService.MimeType.JSON);
-    
-    var rows = data.rows || [];
-    if (rows.length > 0) {
-      var lastRow = sheet.getLastRow();
-      sheet.getRange(lastRow + 1, 1, rows.length, rows[0].length).setValues(rows);
-    }
-    
-    return ContentService.createTextOutput(JSON.stringify({status:'ok',appended:rows.length})).setMimeType(ContentService.MimeType.JSON);
-  } catch(err) {
-    return ContentService.createTextOutput(JSON.stringify({status:'error',message:err.toString()})).setMimeType(ContentService.MimeType.JSON);
-  }
-}
-
-function doGet(e) {
-  return ContentService.createTextOutput(JSON.stringify({status:'ok',msg:'LogNota endpoint aktif'})).setMimeType(ContentService.MimeType.JSON);
-}
-=================================================================
--->
 </body>
 </html>
