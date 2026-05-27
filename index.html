@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Kasir Kodachi v5</title>
+<title>Kasir Kodachi v6</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -48,6 +48,12 @@ body{background:var(--bg);font-family:var(--sans);font-size:13px;color:var(--txt
 .stok-ok{background:rgba(26,122,60,.3);color:#6ee7a0;border:1px solid rgba(110,231,160,.2);}
 .stok-loading{background:rgba(212,133,10,.3);color:#fbbf24;border:1px solid rgba(251,191,36,.2);}
 .stok-err{background:rgba(192,57,43,.3);color:#f87171;border:1px solid rgba(248,113,113,.2);}
+
+/* HARGA BADGE topnav */
+.harga-badge{font-family:var(--mono);font-size:10px;padding:3px 9px;border-radius:10px;font-weight:700;cursor:pointer;}
+.harga-ok{background:rgba(26,106,184,.3);color:#93c5fd;border:1px solid rgba(147,197,253,.2);}
+.harga-loading{background:rgba(212,133,10,.3);color:#fbbf24;border:1px solid rgba(251,191,36,.2);}
+.harga-err{background:rgba(192,57,43,.3);color:#f87171;border:1px solid rgba(248,113,113,.2);}
 
 /* TABS */
 .sheet-tabs{display:flex;border-bottom:2px solid var(--border);background:#fff;padding:0 10px;overflow-x:auto;flex-shrink:0;}
@@ -94,9 +100,35 @@ body{background:var(--bg);font-family:var(--sans);font-size:13px;color:var(--txt
 .stok-kosong{background:#fff5f5;color:var(--red);border:1px solid #fecaca;}
 .stok-na{background:#f7f9fc;color:var(--txt3);border:1px solid var(--border);}
 
+/* DISKON INFO di autocomplete */
+.diskon-badge{font-size:9px;font-family:var(--mono);padding:1px 5px;border-radius:8px;background:#fff3cd;color:#856404;border:1px solid #ffc107;white-space:nowrap;}
+
 /* STOK WARNING di baris item */
 .stok-warn-row{background:#fff5f5!important;}
 .stok-warn-badge{font-size:9px;color:var(--red);font-family:var(--mono);font-weight:700;display:block;padding:0 3px;}
+
+/* SIZE WARNING — input size merah kalau stok kosong */
+.size-inp-warn{background:#fff0f0!important;border:1.5px solid var(--red)!important;color:var(--red)!important;font-weight:700!important;}
+.size-warn-tooltip{
+  position:absolute;top:calc(100% + 2px);left:0;z-index:400;
+  background:#c0392b;color:#fff;font-size:10px;font-family:var(--mono);
+  padding:4px 8px;border-radius:3px;white-space:nowrap;
+  box-shadow:0 3px 10px rgba(0,0,0,.2);pointer-events:none;
+  animation:fadeIn .15s ease;
+}
+.size-warn-tooltip::before{
+  content:'';position:absolute;bottom:100%;left:10px;
+  border:4px solid transparent;border-bottom-color:#c0392b;
+}
+.size-cell-wrap{position:relative;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-3px);}to{opacity:1;transform:translateY(0);}}
+
+/* DISKON INFO di baris nota (bawah nama produk) */
+.diskon-row-info{
+  font-size:9px;font-family:var(--mono);color:var(--amber);
+  padding:0 3px 1px;display:flex;gap:5px;align-items:center;
+}
+.diskon-pct{background:#fff3cd;color:#856404;border:1px solid #ffc107;border-radius:8px;padding:0px 4px;font-size:9px;}
 
 /* TOTALS */
 .nota-totals{margin:0 10px;border:2px solid var(--navy);border-top:none;}
@@ -270,6 +302,7 @@ body{background:var(--bg);font-family:var(--sans);font-size:13px;color:var(--txt
     <span class="topnav-logo">⬡ KODACHI</span>
     <span id="syncStatus" class="sync-ind s-ok">● SYNCED</span>
     <span id="stokStatus" class="stok-badge stok-loading" onclick="syncStok()" title="Klik untuk refresh stok">📦 STOK...</span>
+    <span id="hargaStatus" class="harga-badge harga-loading" onclick="syncHarga()" title="Klik untuk refresh harga">💰 HARGA...</span>
     <button class="tnbtn" onclick="syncNow()">☁ SYNC</button>
     <span class="tnu" id="topUser"></span>
     <button class="tnbtn" onclick="doLogout()" style="border-color:rgba(248,113,113,.4);color:#f87171;">KELUAR</button>
@@ -320,7 +353,7 @@ body{background:var(--bg);font-family:var(--sans);font-size:13px;color:var(--txt
                 <th>BARANG</th>
                 <th style="width:54px;">SIZE</th>
                 <th style="width:36px;">QTY</th>
-                <th style="width:72px;">SUBTOTAL</th>
+                <th style="width:80px;">SUBTOTAL</th>
               </tr>
             </thead>
             <tbody id="itemsBody"></tbody>
@@ -383,7 +416,8 @@ body{background:var(--bg);font-family:var(--sans);font-size:13px;color:var(--txt
           — <b>Wajib Reset</b> sebelum nota baru<br>
           — Print = otomatis simpan log &amp; sync ke spreadsheet<br>
           — Batal = catat nota yang dibatalkan<br>
-          — <b style="color:var(--red);">⚠ Stok merah</b> = barang habis, cek dulu ke gudang
+          — <b style="color:var(--red);">⚠ Stok merah</b> = barang habis, cek dulu ke gudang<br>
+          — <b style="color:var(--amber);">% Diskon</b> = harga promo vs retail otomatis tampil
         </div>
 
         <div class="saldo-box">
@@ -460,6 +494,7 @@ body{background:var(--bg);font-family:var(--sans);font-size:13px;color:var(--txt
         <h2 style="font-size:13px;font-weight:700;color:var(--navy);font-family:var(--mono);letter-spacing:1px;">📦 STATUS STOK</h2>
         <div style="display:flex;gap:8px;">
           <button onclick="syncStok()" style="padding:7px 14px;background:var(--navy);color:#fff;border:none;border-radius:3px;cursor:pointer;font-size:11px;font-weight:700;font-family:var(--mono);">↻ REFRESH STOK</button>
+          <button onclick="syncHarga()" style="padding:7px 14px;background:var(--blue);color:#fff;border:none;border-radius:3px;cursor:pointer;font-size:11px;font-weight:700;font-family:var(--mono);">↻ REFRESH HARGA</button>
           <span id="stokLastUpdate" style="font-size:10px;color:var(--txt3);font-family:var(--mono);align-self:center;"></span>
         </div>
       </div>
@@ -586,9 +621,9 @@ body{background:var(--bg);font-family:var(--sans);font-size:13px;color:var(--txt
 
 <script>
 // ================================================================
-// PRODUCTS
+// PRODUCTS — akan di-override oleh data dari sheet jika tersedia
 // ================================================================
-const PRODUCTS=[
+let PRODUCTS=[
   {n:"8111 Stripe",h:115000},{n:"8111 A",h:125000},{n:"8111 Hitam",h:125000},{n:"8111 H/P",h:125000},{n:"8111 H/H",h:125000},{n:"8111 R1",h:125000},{n:"8111 R2",h:125000},{n:"8111 R3",h:125000},{n:"8111 Monaco Checker Heel",h:125000},{n:"8111 P/Monaco",h:125000},{n:"8111 Brown A",h:160000},{n:"8111 Brown B",h:160000},{n:"8111 Brown C",h:160000},{n:"8111 H/P Double Black",h:125000},
   {n:"8116 Kuning Biru",h:115000},{n:"8116 Merah Biru",h:115000},{n:"8116 Merah Silver",h:115000},{n:"8116 Biru Silver",h:115000},{n:"8116 Hitam Putih",h:125000},{n:"8116 Hitam Silver",h:125000},{n:"8116 PH (Putih Hitam)",h:125000},{n:"8116 PDB (Putih Double Black)",h:125000},{n:"8116 Grey Double Black",h:125000},{n:"8116 Hitam Putih Double Black",h:125000},
   {n:"K2428 All White",h:255000},{n:"K2428 All Black",h:255000},{n:"K2428 Hitam/Putih",h:255000},{n:"K2428 Biru/Coklat",h:255000},{n:"K2428 Hijau/Abu",h:255000},
@@ -620,13 +655,88 @@ const PRODUCTS=[
 ];
 
 // ================================================================
+// HARGA DATA — dari sheet "Data" kolom B (nama), C (harga baru), D (harga retail)
+// ================================================================
+const HARGA_K = 'kodachi_v6_harga';
+const HARGA_TS_K = 'kodachi_v6_harga_ts';
+let hargaData = {}; // { "NamaProduk": { baru: 125000, retail: 130000 } }
+let hargaLoaded = false;
+
+async function syncHarga() {
+  const el = document.getElementById('hargaStatus');
+  el.textContent = '💰 LOADING...';
+  el.className = 'harga-badge harga-loading';
+  try {
+    const url = `${APPS_URL}?action=getHarga&sheetName=Data`;
+    const res = await fetch(url);
+    const json = await res.json();
+    if (json.status === 'ok' && json.harga) {
+      hargaData = json.harga;
+      hargaLoaded = true;
+      localStorage.setItem(HARGA_K, JSON.stringify(hargaData));
+      const ts = new Date().toLocaleString('id-ID');
+      localStorage.setItem(HARGA_TS_K, ts);
+      const total = Object.keys(hargaData).length;
+      el.textContent = `💰 HARGA (${total})`;
+      el.className = 'harga-badge harga-ok';
+      // Update PRODUCTS dengan harga baru dari sheet
+      updateProductsFromHarga();
+      addSyncLog(`✓ Harga: ${total} produk`);
+      toast(`✓ Harga diperbarui (${total} produk)`, 't-ok');
+      renderItems(); // refresh nota
+    } else {
+      throw new Error(json.message || 'Gagal baca harga');
+    }
+  } catch (e) {
+    el.textContent = '💰 HARGA ERR';
+    el.className = 'harga-badge harga-err';
+    try {
+      const cached = JSON.parse(localStorage.getItem(HARGA_K) || 'null');
+      if (cached) {
+        hargaData = cached;
+        hargaLoaded = true;
+        updateProductsFromHarga();
+        toast('⚠ Pakai cache harga lama', 't-info');
+      } else {
+        toast('Gagal load harga: ' + e.message, 't-err');
+      }
+    } catch {}
+    addSyncLog('✗ Harga gagal: ' + e.message);
+  }
+}
+
+function updateProductsFromHarga() {
+  // Update harga di array PRODUCTS dari data sheet
+  PRODUCTS.forEach(p => {
+    const key = p.n.trim();
+    if (hargaData[key]) {
+      p.h = hargaData[key].baru; // gunakan harga baru
+      p.retail = hargaData[key].retail;
+    }
+  });
+  // Tambahkan produk dari sheet yang belum ada di PRODUCTS
+  Object.entries(hargaData).forEach(([nama, harga]) => {
+    if (!PRODUCTS.find(p => p.n === nama)) {
+      PRODUCTS.push({ n: nama, h: harga.baru, retail: harga.retail });
+    }
+  });
+}
+
+function getDiskonInfo(nama) {
+  // Cari info diskon untuk suatu produk
+  const p = PRODUCTS.find(pp => pp.n === nama);
+  if (!p || !p.retail || p.retail <= p.h) return null;
+  const selisih = p.retail - p.h;
+  const pct = Math.round((selisih / p.retail) * 100);
+  return { baru: p.h, retail: p.retail, selisih, pct };
+}
+
+// ================================================================
 // CONFIG
 // ================================================================
 const APPS_URL = 'https://script.google.com/macros/s/AKfycbxMJGojO0mHxttLQ_oTlRVr29Fk0Ga7H82ory_H5714aEDSRUnjQi2k2Yu9_hy9ASxl0A/exec';
 const LOG_NOTA_URL = APPS_URL;
 const LOG_NOTA_SHEET_NAME = 'LogNota';
-
-// Spreadsheet ID untuk fetch stok
 const SHEET_ID = '1gJtL8Qr65ZXy5aNW4WWz1umKdSkFjGTZdPq7xfnJbfI';
 const STOCK_SHEET_NAME = 'Stock';
 
@@ -636,7 +746,6 @@ const STOK_K='kodachi_v5_stok', STOK_TS_K='kodachi_v5_stok_ts', MAP_K='kodachi_v
 
 // ================================================================
 // DEFAULT MAPPING KOLOM
-// Field yang tersedia untuk dikirim ke sheet
 // ================================================================
 const AVAILABLE_FIELDS = [
   {key:'notaId',    label:'Nota ID'},
@@ -691,7 +800,7 @@ function toast(msg,cls='t-ok'){
 // ================================================================
 // STOK DATA
 // ================================================================
-let stokData = {}; // key: "NamaProduk" atau "NamaProduk|Size" => jumlah
+let stokData = {};
 let stokLoaded = false;
 
 function getStokKey(nama, size){
@@ -702,7 +811,7 @@ function getStokKey(nama, size){
 }
 
 function getStok(nama, size){
-  if(!stokLoaded) return null; // belum load
+  if(!stokLoaded) return null;
   const k1 = getStokKey(nama, size);
   const k2 = (nama||'').trim();
   if(stokData[k1]!==undefined) return stokData[k1];
@@ -727,7 +836,6 @@ async function syncStok(){
   const el=document.getElementById('stokStatus');
   el.textContent='📦 LOADING...';el.className='stok-badge stok-loading';
   try{
-    // Fetch sheet Stock via GAS endpoint getStock
     const url=`${APPS_URL}?action=getStock&sheetName=${encodeURIComponent(STOCK_SHEET_NAME)}`;
     const res=await fetch(url);
     const json=await res.json();
@@ -745,14 +853,13 @@ async function syncStok(){
       el.className=`stok-badge ${kosong>0?'stok-err':'stok-ok'}`;
       addSyncLog(`✓ Stok: ${total} item, ${kosong} kosong`);
       toast(`✓ Stok diperbarui (${total} item)`,'t-ok');
-      renderItems(); // refresh tampilan nota
+      renderItems();
       renderStokTab();
     }else{
       throw new Error(json.message||'Gagal baca stok');
     }
   }catch(e){
     el.textContent='📦 STOK ERR';el.className='stok-badge stok-err';
-    // Coba load dari cache
     try{
       const cached=JSON.parse(localStorage.getItem(STOK_K)||'null');
       if(cached){stokData=cached;stokLoaded=true;toast('⚠ Pakai cache stok lama','t-info');}
@@ -770,7 +877,6 @@ function renderStokTab(){
     el.innerHTML='<div style="color:var(--txt3);font-size:12px;font-family:var(--mono);padding:20px 0;">Belum ada data stok. Klik REFRESH STOK.</div>';
     return;
   }
-  // Group by nama produk
   const byProduk={};
   Object.entries(stokData).forEach(([key,val])=>{
     const parts=key.split('|');
@@ -781,7 +887,6 @@ function renderStokTab(){
     else{byProduk[nama].total=val;}
   });
 
-  // Filter
   let entries=Object.entries(byProduk).filter(([nama])=>!q||nama.toLowerCase().includes(q));
   entries=entries.filter(([nama,data])=>{
     const total=data.total||Object.values(data.sizes).reduce((s,v)=>s+v,0);
@@ -865,9 +970,7 @@ function refreshKasirDropdowns(){
   const disp=document.getElementById('kasirDisplay');
   const hid=document.getElementById('kasirSelect');
   if(!hid)return;
-
   if(CU.role==='admin'){
-    // Admin: ganti hidden input jadi select dropdown pilih kasir
     const users=getUsers().filter(u=>u.role==='toko');
     if(disp)disp.style.display='none';
     const sel=document.createElement('select');
@@ -879,20 +982,15 @@ function refreshKasirDropdowns(){
     });
     hid.replaceWith(sel);
   }else{
-    // Kasir toko: tampilkan nama, simpan di hidden input
     if(disp){disp.textContent=CU.display;disp.style.display='';}
-    // Pastikan hidden input punya value yang benar
     if(hid.tagName==='INPUT'){
       hid.value=CU.display;
     } else if(hid.tagName==='SELECT'){
-      // Kalau sudah jadi select (misal login ulang), ganti balik jadi hidden
       const inp=document.createElement('input');
       inp.type='hidden';inp.id='kasirSelect';inp.value=CU.display;
       hid.replaceWith(inp);
     }
   }
-
-  // Dropdown kasir di tab Uang
   const tu=getUsers().filter(u=>u.role==='toko');
   const uangKasirEl=document.getElementById('uangKasir');
   if(uangKasirEl){
@@ -914,7 +1012,7 @@ function initApp(){
   renderItems();calcAll();updateSyncStatus();startAutoSync();checkSchedule();
   renderLogTable();renderUangHistory();
   if(CU.role==='admin'){renderAdminPanel();renderMappingUI();}
-  // Load stok dari cache dulu, lalu refresh
+  // Load cache
   try{
     const cached=JSON.parse(localStorage.getItem(STOK_K)||'null');
     if(cached){
@@ -928,7 +1026,19 @@ function initApp(){
       badge.className=`stok-badge ${kosong>0?'stok-err':'stok-ok'}`;
     }
   }catch{}
-  setTimeout(()=>syncStok(),1500); // auto refresh stok setelah login
+  try{
+    const cachedH=JSON.parse(localStorage.getItem(HARGA_K)||'null');
+    if(cachedH){
+      hargaData=cachedH;hargaLoaded=true;
+      updateProductsFromHarga();
+      const total=Object.keys(hargaData).length;
+      const badge=document.getElementById('hargaStatus');
+      badge.textContent=`💰 HARGA (${total})`;
+      badge.className='harga-badge harga-ok';
+    }
+  }catch{}
+  setTimeout(()=>syncStok(),1500);
+  setTimeout(()=>syncHarga(),2500);
 }
 
 function generateNotaId(){
@@ -971,16 +1081,32 @@ function renderItems(){
   items.forEach((item,idx)=>{
     const stokVal=item.name?getStok(item.name,item.detil):null;
     const isKosong=stokVal===0;
+    const diskon=item.name?getDiskonInfo(item.name):null;
     const tr=document.createElement('tr');
     if(isKosong)tr.className='stok-warn-row';
+
+    // Cek stok untuk size yang diinput
+    const sizeKosong = item.name && item.detil && stokLoaded && getStok(item.name, item.detil) === 0;
+    const sizeInpClass = sizeKosong ? 'ii size-inp-warn' : 'ii';
+
     tr.innerHTML=`<td class="no">${idx+1}</td>
-    <td style="padding:0;"><div class="acw">
-      <input class="ii" id="iname-${item.id}" value="${esc(item.name)}" placeholder="${idx===0?'Nama barang...':''}" oninput="filterAC(${item.id},this.value)" onblur="hideAC(${item.id})" autocomplete="off">
-      <div class="acl hidden" id="ac-${item.id}"></div>
-    </div>
-    ${isKosong?'<span class="stok-warn-badge">⚠ STOK KOSONG!</span>':''}
+    <td style="padding:0;">
+      <div class="acw">
+        <input class="ii" id="iname-${item.id}" value="${esc(item.name)}" placeholder="${idx===0?'Nama barang...':''}" oninput="filterAC(${item.id},this.value)" onblur="hideAC(${item.id})" autocomplete="off">
+        <div class="acl hidden" id="ac-${item.id}"></div>
+      </div>
+      ${isKosong?'<span class="stok-warn-badge">⚠ STOK KOSONG!</span>':''}
+      ${diskon&&item.name?`<div class="diskon-row-info"><span class="diskon-pct">-${diskon.pct}%</span><span>Diskon Rp ${fmt(diskon.selisih)} dari retail Rp ${fmt(diskon.retail)}</span></div>`:''}
     </td>
-    <td style="padding:0;"><input class="ii" id="idetil-${item.id}" value="${esc(item.detil)}" oninput="updF(${item.id},'detil',this.value);checkStokWarn(${item.id})" style="text-align:center;" placeholder="size"></td>
+    <td style="padding:0;">
+      <div class="size-cell-wrap">
+        <input class="${sizeInpClass}" id="idetil-${item.id}" value="${esc(item.detil)}" 
+          oninput="updF(${item.id},'detil',this.value);checkStokWarn(${item.id})" 
+          onblur="hideSizeTooltip(${item.id})"
+          style="text-align:center;" placeholder="size">
+        ${sizeKosong?`<div class="size-warn-tooltip" id="stip-${item.id}">⚠ SIZE INI KOSONG!</div>`:''}
+      </div>
+    </td>
     <td style="padding:0;"><input class="ii" type="number" id="iqty-${item.id}" value="${item.qty}" oninput="updF(${item.id},'qty',this.value)" style="text-align:center;" min="1"></td>
     <td class="sc" id="isub-${item.id}">${item.name&&item.qty?fmt(item.price*(parseFloat(item.qty)||0)):''}</td>`;
     tbody.appendChild(tr);
@@ -988,23 +1114,67 @@ function renderItems(){
 }
 
 function checkStokWarn(id){
-  // Re-render baris yg relevan saja
   const item=items.find(i=>i.id===id);
   if(!item)return;
-  const stokVal=item.name?getStok(item.name,item.detil):null;
-  const tr=document.getElementById(`iname-${id}`)?.closest('tr');
-  if(!tr)return;
-  if(stokVal===0){
-    tr.className='stok-warn-row';
-    // tambah badge jika belum ada
-    const td=tr.cells[1];
-    if(td&&!td.querySelector('.stok-warn-badge')){
-      const b=document.createElement('span');b.className='stok-warn-badge';b.textContent='⚠ STOK KOSONG!';td.appendChild(b);
+
+  const sizeInp = document.getElementById(`idetil-${id}`);
+  const nameTd = sizeInp?.closest('tr')?.cells[1];
+
+  // Cek stok total (nama saja, tanpa size)
+  const stokNama = item.name ? getStok(item.name, '') : null;
+  const stokSize = item.name && item.detil ? getStok(item.name, item.detil) : null;
+
+  // Warning row merah kalau nama kosong tanpa memperhatikan size
+  const tr = document.getElementById(`iname-${id}`)?.closest('tr');
+  if(tr) {
+    if(stokNama === 0 && !item.detil) {
+      tr.className='stok-warn-row';
+      if(nameTd && !nameTd.querySelector('.stok-warn-badge')){
+        const b=document.createElement('span');b.className='stok-warn-badge';b.textContent='⚠ STOK KOSONG!';nameTd.appendChild(b);
+      }
+    } else {
+      tr.className='';
+      const badge=tr.querySelector('.stok-warn-badge');if(badge)badge.remove();
     }
-  }else{
-    tr.className='';
-    const badge=tr.querySelector('.stok-warn-badge');if(badge)badge.remove();
   }
+
+  // Warning size merah
+  if(!sizeInp)return;
+  const sizeWrap = sizeInp.closest('.size-cell-wrap');
+  let tooltip = document.getElementById(`stip-${id}`);
+
+  if(stokSize === 0 && item.detil) {
+    // Size ini kosong!
+    sizeInp.className = 'ii size-inp-warn';
+    if(!tooltip && sizeWrap) {
+      const t = document.createElement('div');
+      t.className = 'size-warn-tooltip';
+      t.id = `stip-${id}`;
+      t.textContent = `⚠ SIZE ${item.detil} KOSONG!`;
+      sizeWrap.appendChild(t);
+    } else if(tooltip) {
+      tooltip.textContent = `⚠ SIZE ${item.detil} KOSONG!`;
+      tooltip.style.display = '';
+    }
+    if(tr) tr.className = 'stok-warn-row';
+    toast(`⚠ SIZE ${item.detil} untuk ${item.name} KOSONG!`, 't-err');
+  } else if(stokSize !== null && stokSize <= 3 && stokSize > 0 && item.detil) {
+    // Size tipis
+    sizeInp.className = 'ii';
+    sizeInp.style.borderBottom = '2px solid var(--amber)';
+    if(tooltip) tooltip.style.display='none';
+    toast(`⚠ Stok ${item.name} size ${item.detil} tinggal ${stokSize}!`, 't-info');
+  } else {
+    // Normal
+    sizeInp.className = 'ii';
+    sizeInp.style.borderBottom = '';
+    if(tooltip) tooltip.style.display='none';
+  }
+}
+
+function hideSizeTooltip(id){
+  // Tidak sembunyikan langsung agar user masih bisa baca
+  // Tooltip akan hilang saat re-render atau saat stok OK
 }
 
 function updF(id,field,val){
@@ -1023,14 +1193,22 @@ function filterAC(id,q){
     if(!q.trim()){ac.classList.add('hidden');calcAll();return;}
     const res=PRODUCTS.filter(p=>p.n.toLowerCase().includes(q.toLowerCase())).slice(0,16);
     if(!res.length){ac.classList.add('hidden');calcAll();return;}
-    // Tampilkan dengan info stok
     ac.innerHTML=res.map(p=>{
       const sv=getStok(p.n,'');
       const sc=stokClass(sv);
       const sl=sv!==null?`<span class="aci-stok ${sc}">${stokLabel(sv)}</span>`:'';
+      // Diskon info
+      const dis=getDiskonInfo(p.n);
+      const disHtml=dis?`<span class="diskon-badge">-${dis.pct}%</span>`:'';
+      const priceHtml=dis
+        ? `<span style="display:flex;flex-direction:column;align-items:flex-end;gap:1px;">
+            <span class="acp" style="color:var(--green);">${fmt(p.h)}</span>
+            <span style="font-size:9px;color:var(--txt3);text-decoration:line-through;font-family:var(--mono);">${fmt(dis.retail)}</span>
+           </span>`
+        : `<span class="acp">${fmt(p.h)}</span>`;
       return `<div class="aci" onmousedown="selProd(${id},'${p.n.replace(/'/g,"\\'")}',${p.h})">
-        <span>${p.n}</span>
-        <span style="display:flex;align-items:center;gap:6px;">${sl}<span class="acp">${fmt(p.h)}</span></span>
+        <span style="flex:1;">${p.n}</span>
+        <span style="display:flex;align-items:center;gap:4px;">${disHtml}${sl}${priceHtml}</span>
       </div>`;
     }).join('');
     ac.classList.remove('hidden');
@@ -1044,22 +1222,42 @@ function selProd(id,name,price){
   const sub=document.getElementById(`isub-${id}`);if(sub)sub.textContent=item.qty?fmt(price*(parseFloat(item.qty)||0)):'';
   const ac=document.getElementById(`ac-${id}`);if(ac)ac.classList.add('hidden');
   const qel=document.getElementById(`iqty-${id}`);if(qel&&!item.qty){qel.value='1';item.qty=1;}
-  // Cek stok setelah pilih produk
+
+  // Tampilkan info diskon di baris
+  const nameTd=inp?.closest('tr')?.cells[1];
+  if(nameTd){
+    // Hapus diskon lama
+    const oldDis=nameTd.querySelector('.diskon-row-info');if(oldDis)oldDis.remove();
+    const dis=getDiskonInfo(name);
+    if(dis){
+      const el=document.createElement('div');
+      el.className='diskon-row-info';
+      el.innerHTML=`<span class="diskon-pct">-${dis.pct}%</span><span>Diskon Rp ${fmt(dis.selisih)} dari retail Rp ${fmt(dis.retail)}</span>`;
+      nameTd.appendChild(el);
+    }
+  }
+
+  // Cek stok
   const stokVal=getStok(name,'');
   if(stokVal===0){
     toast(`⚠ STOK ${name} KOSONG!`,'t-err');
     const tr=inp?.closest('tr');
     if(tr){
       tr.className='stok-warn-row';
-      const td=tr.cells[1];
-      if(td&&!td.querySelector('.stok-warn-badge')){
-        const b=document.createElement('span');b.className='stok-warn-badge';b.textContent='⚠ STOK KOSONG!';td.appendChild(b);
+      if(nameTd&&!nameTd.querySelector('.stok-warn-badge')){
+        const b=document.createElement('span');b.className='stok-warn-badge';b.textContent='⚠ STOK KOSONG!';nameTd.appendChild(b);
       }
     }
   }else if(stokVal!==null&&stokVal<=3){
     toast(`⚠ Stok ${name} tinggal ${stokVal}!`,'t-info');
   }
   calcAll();
+
+  // Fokus ke input size
+  setTimeout(()=>{
+    const sizeEl=document.getElementById(`idetil-${id}`);
+    if(sizeEl)sizeEl.focus();
+  },50);
 }
 
 function hideAC(id){setTimeout(()=>{const a=document.getElementById(`ac-${id}`);if(a)a.classList.add('hidden');},200);}
@@ -1091,10 +1289,9 @@ function printNota(){
   const filled=items.filter(i=>i.name&&(parseFloat(i.qty)||0)>0);
   if(!filled.length){toast('Tambah minimal 1 barang!','t-err');return;}
 
-  // Cek stok kosong — warning tapi tetap bisa lanjut
   const kosongItems=filled.filter(i=>{const sv=getStok(i.name,i.detil);return sv===0;});
   if(kosongItems.length>0){
-    const names=kosongItems.map(i=>i.name).join(', ');
+    const names=kosongItems.map(i=>i.name+(i.detil?' sz '+i.detil:'')).join(', ');
     if(!confirm(`⚠ STOK KOSONG:\n${names}\n\nTetap lanjut transaksi?`))return;
   }
 
@@ -1360,7 +1557,6 @@ function renderMappingUI(){
   const mapping=getMapping();
   const cols='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
   let html='<table class="map-table"><thead><tr><th style="width:40px;">KOLOM</th><th>FIELD YANG DIKIRIM</th></tr></thead><tbody>';
-  // Tampilkan sebanyak mapping + 2 ekstra kosong
   const total=mapping.length+2;
   for(let i=0;i<total;i++){
     const letter=cols[i]||`K${i+1}`;
@@ -1375,7 +1571,6 @@ function renderMappingUI(){
 }
 
 function saveMappingConfig(){
-  const cols='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
   const mapping=[];
   let i=0;
   while(document.getElementById(`map-sel-${i}`)){
@@ -1384,7 +1579,6 @@ function saveMappingConfig(){
     else if(v==='(kosong)')mapping.push('(kosong)');
     i++;
   }
-  // Trim trailing kosong
   while(mapping.length&&mapping[mapping.length-1]==='(kosong)')mapping.pop();
   saveMapping(mapping);
   toast(`✓ Mapping ${mapping.length} kolom disimpan`,'t-ok');
