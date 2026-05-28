@@ -64,7 +64,7 @@ body{background:var(--bg);font-family:var(--sans);font-size:13px;color:var(--txt
 /* LAYOUT */
 .app-wrap{max-width:1024px;margin:0 auto;background:var(--surface);min-height:calc(100vh - 42px);}
 .main-flex{display:flex;}
-.nota-panel{width:400px;min-width:400px;border-right:2px solid var(--border);}
+.nota-panel{width:470px;min-width:470px;border-right:2px solid var(--border);}
 .right-panel{flex:1;padding:12px;display:flex;flex-direction:column;gap:10px;}
 .tab-page{display:none;padding:16px;min-height:calc(100vh - 86px);}
 .tab-page.active{display:block;}
@@ -331,17 +331,17 @@ body{background:var(--bg);font-family:var(--sans);font-size:13px;color:var(--txt
             <span id="kasirDisplay" style="background:#d5e8d4;padding:2px 8px;font-weight:700;font-size:12px;border:1px solid #aaa;font-family:var(--mono);"></span>
             <input type="hidden" id="kasirSelect">
           </div>
-          <div class="nhd">
-            <span style="font-size:10px;color:var(--txt3);">HARI</span>
-            <select class="dinp" id="dateDay" style="width:72px;">
+          <div class="nhd" style="grid-template-columns:auto 1fr auto 1fr auto 1fr;gap:3px;padding:5px 7px;">
+            <span style="font-size:10px;color:var(--txt3);white-space:nowrap;">HARI</span>
+            <select class="dinp" id="dateDay" style="width:100%;min-width:70px;">
               <option>Senin</option><option>Selasa</option><option>Rabu</option><option>Kamis</option><option>Jumat</option><option>Sabtu</option><option>Minggu</option>
             </select>
-            <input type="number" class="dinp" id="dateTgl" style="width:34px;" min="1" max="31">
-            <select class="dinp" id="dateBulan" style="width:48px;">
+            <input type="number" class="dinp" id="dateTgl" style="width:38px;" min="1" max="31" placeholder="Tgl">
+            <select class="dinp" id="dateBulan" style="width:100%;min-width:46px;">
               <option>Jan</option><option>Feb</option><option>Mar</option><option>Apr</option><option>Mei</option><option>Jun</option><option>Jul</option><option>Ags</option><option>Sep</option><option>Okt</option><option>Nov</option><option>Des</option>
             </select>
-            <span></span>
-            <input type="number" class="dinp" id="dateThn" style="width:50px;">
+            <span style="font-size:10px;color:var(--txt3);">THN</span>
+            <input type="number" class="dinp" id="dateThn" style="width:100%;min-width:52px;">
           </div>
         </div>
 
@@ -351,9 +351,10 @@ body{background:var(--bg);font-family:var(--sans);font-size:13px;color:var(--txt
               <tr>
                 <th style="width:22px;">NO</th>
                 <th>BARANG</th>
-                <th style="width:54px;">SIZE</th>
-                <th style="width:36px;">QTY</th>
-                <th style="width:80px;">SUBTOTAL</th>
+                <th style="width:48px;">SIZE</th>
+                <th style="width:90px;">TIPE</th>
+                <th style="width:34px;">QTY</th>
+                <th style="width:76px;">SUBTOTAL</th>
               </tr>
             </thead>
             <tbody id="itemsBody"></tbody>
@@ -1020,7 +1021,7 @@ let uangType='masuk',syncIntervalId=null;
 
 function initApp(){
   generateNotaId();setTodayDate();items=[];itemCounter=0;
-  for(let i=0;i<20;i++)items.push({id:itemCounter++,name:'',detil:'',qty:'',price:0});
+  for(let i=0;i<20;i++)items.push({id:itemCounter++,name:'',detil:'',tipe:'',qty:'',price:0});
   renderItems();calcAll();updateSyncStatus();startAutoSync();checkSchedule();
   renderLogTable();renderUangHistory();
   if(CU.role==='admin'){renderAdminPanel();renderMappingUI();}
@@ -1051,6 +1052,12 @@ function initApp(){
   }catch{}
   setTimeout(()=>syncStok(),1500);
   setTimeout(()=>syncHarga(),2500);
+  setTimeout(()=>syncKaosKaki(),3500);
+  // Load cache kaos kaki
+  try{
+    const cachedKK=JSON.parse(localStorage.getItem(KAOSKAKI_K)||'null');
+    if(cachedKK&&cachedKK.length){kaosKakiTipes=cachedKK;kaosKakiLoaded=true;}
+  }catch{}
 }
 
 function generateNotaId(){
@@ -1086,7 +1093,7 @@ function switchTab(tab){
 // ================================================================
 // ITEMS / NOTA
 // ================================================================
-function addItem(){items.push({id:itemCounter++,name:'',detil:'',qty:'',price:0});renderItems();}
+function addItem(){items.push({id:itemCounter++,name:'',detil:'',tipe:'',qty:'',price:0});renderItems();}
 
 function renderItems(){
   const tbody=document.getElementById('itemsBody');tbody.innerHTML='';
@@ -1116,6 +1123,14 @@ function renderItems(){
           oninput="onSizeInput(${item.id},this.value)"
           style="text-align:center;" placeholder="size">
         ${sizeKosong?`<div class="size-warn-tooltip" id="stip-${item.id}">⚠ SIZE INI KOSONG!</div>`:''}
+      </div>
+    </td>
+    <td style="padding:0;">
+      <div class="acw" style="position:relative;">
+        <input class="ii" id="itipe-${item.id}" value="${esc(item.tipe||'')}"
+          oninput="filterTipeAC(${item.id},this.value)" onblur="hideTipeAC(${item.id})"
+          style="text-align:center;font-size:11px;" placeholder="${isKaosKaki(item.name)?'tipe...':''}">
+        <div class="acl hidden" id="tac-${item.id}" style="min-width:160px;"></div>
       </div>
     </td>
     <td style="padding:0;"><input class="ii" type="number" id="iqty-${item.id}" value="${item.qty}" oninput="updF(${item.id},'qty',this.value)" style="text-align:center;" min="1"></td>
@@ -1304,6 +1319,85 @@ function selProd(id,name,price){
 }
 
 function hideAC(id){setTimeout(()=>{const a=document.getElementById(`ac-${id}`);if(a)a.classList.add('hidden');},200);}
+
+// ================================================================
+// KAOS KAKI — data tipe dari sheet "Master Stock kaos kaki" B4:B100
+// ================================================================
+const KAOSKAKI_K = 'kodachi_v6_kaoskaki';
+let kaosKakiTipes = [];
+let kaosKakiLoaded = false;
+
+function isKaosKaki(nama){
+  if(!nama) return false;
+  const n = nama.toLowerCase();
+  return n.includes('kaos kaki') || n.includes('kaoskaki') || n.includes('kaus kaki');
+}
+
+async function syncKaosKaki(){
+  try{
+    const url = `${APPS_URL}?action=getKaosKaki&sheetName=${encodeURIComponent('Master Stock kaos kaki')}`;
+    const res = await fetch(url);
+    const json = await res.json();
+    if(json.status === 'ok' && json.tipes){
+      kaosKakiTipes = json.tipes;
+      kaosKakiLoaded = true;
+      localStorage.setItem(KAOSKAKI_K, JSON.stringify(kaosKakiTipes));
+      addSyncLog(`✓ Kaos kaki: ${kaosKakiTipes.length} tipe`);
+    }
+  } catch(e){
+    try{
+      const cached = JSON.parse(localStorage.getItem(KAOSKAKI_K)||'null');
+      if(cached){ kaosKakiTipes = cached; kaosKakiLoaded = true; }
+    }catch{}
+    addSyncLog('⚠ Kaos kaki fallback cache: '+e.message);
+  }
+}
+
+const tipeAcTimers = {};
+function filterTipeAC(id, q){
+  clearTimeout(tipeAcTimers[id]);
+  tipeAcTimers[id] = setTimeout(()=>{
+    const item = items.find(i=>i.id===id);
+    if(item) item.tipe = q;
+    const ac = document.getElementById(`tac-${id}`);
+    if(!ac) return;
+    if(!item || !isKaosKaki(item.name)){
+      ac.classList.add('hidden');
+      return;
+    }
+    const candidates = kaosKakiTipes.filter(t =>
+      !q || t.toLowerCase().includes(q.toLowerCase())
+    ).slice(0, 12);
+    if(!candidates.length){ ac.classList.add('hidden'); return; }
+    ac.innerHTML = candidates.map(t =>
+      `<div class="aci" onmousedown="selTipe(${id},'${t.replace(/'/g,"\'")}')">
+        <span>${t}</span>
+      </div>`
+    ).join('');
+    ac.classList.remove('hidden');
+  }, 80);
+}
+
+function selTipe(id, tipe){
+  const item = items.find(i=>i.id===id);
+  if(!item) return;
+  item.tipe = tipe;
+  const inp = document.getElementById(`itipe-${id}`);
+  if(inp) inp.value = tipe;
+  const ac = document.getElementById(`tac-${id}`);
+  if(ac) ac.classList.add('hidden');
+  setTimeout(()=>{
+    const qel = document.getElementById(`iqty-${id}`);
+    if(qel) qel.focus();
+  }, 50);
+}
+
+function hideTipeAC(id){
+  setTimeout(()=>{
+    const ac = document.getElementById(`tac-${id}`);
+    if(ac) ac.classList.add('hidden');
+  }, 200);
+}
 function setPayment(val){currentPayment=val;document.getElementById('payLabel').textContent=val;calcAll();}
 
 function calcAll(){
@@ -1347,7 +1441,7 @@ function printNota(){
 
   const rows=filled.map(i=>({
     notaId,waktu:now.toISOString(),kasir,payment:currentPayment,
-    produk:i.name,ukuran:i.detil,qty:parseFloat(i.qty)||0,harga:i.price,
+    produk:i.name,ukuran:i.detil,tipe:i.tipe||'',qty:parseFloat(i.qty)||0,harga:i.price,
     subtotal:i.price*(parseFloat(i.qty)||0),totalBayar:total,kembalian:kem,
     type:detectType(i.name),saldoAwal:saldoA,saldoAkhir:saldoAk
   }));
@@ -1379,7 +1473,7 @@ function buildPrintHTML(notaId,kasir,now,filled,total,uangBayar,kem){
 <div style="font-size:10px;color:#888;">${tgl}</div>
 <div class="prd"></div>`;
   filled.forEach(i=>{
-    html+=`<div class="prr"><span>${i.name}${i.detil?' ('+i.detil+')':''} x${i.qty}</span><span>${fmt(i.price*(parseFloat(i.qty)||0))}</span></div>`;
+    html+=`<div class="prr"><span>${i.name}${i.detil?' sz'+i.detil:''}${i.tipe?' ('+i.tipe+')':''} x${i.qty}</span><span>${fmt(i.price*(parseFloat(i.qty)||0))}</span></div>`;
   });
   html+=`<div class="prd"></div>
 <div class="prr"><b>TOTAL</b><b>${fmt(total)}</b></div>
@@ -1427,7 +1521,7 @@ function resetNota(){
   document.getElementById('paymentSel').value='CASH';currentPayment='CASH';
   document.getElementById('payLabel').textContent='CASH';
   generateNotaId();
-  for(let i=0;i<20;i++)items.push({id:itemCounter++,name:'',detil:'',qty:'',price:0});
+  for(let i=0;i<20;i++)items.push({id:itemCounter++,name:'',detil:'',tipe:'',qty:'',price:0});
   renderItems();calcAll();
 }
 
