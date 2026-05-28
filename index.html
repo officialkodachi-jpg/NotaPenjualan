@@ -249,6 +249,8 @@ input[type=checkbox].cb-item{width:14px;height:14px;accent-color:var(--navy);cur
 .pg-ac-item{padding:5px 8px;cursor:pointer;font-size:11px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border2);gap:6px;}
 .pg-ac-item:hover{background:#dbeafe;}
 .pg-ac-price{color:var(--navy2);font-weight:600;font-family:var(--mono);font-size:10px;}
+/* tipe-wajib hint */
+.tipe-hint{font-size:9px;color:var(--amber);font-family:var(--mono);padding:0 3px 1px;display:block;}
 @media print{
   body *{visibility:hidden;}
   #printArea,#printArea *{visibility:visible;}
@@ -388,7 +390,7 @@ input[type=checkbox].cb-item{width:14px;height:14px;accent-color:var(--navy);cur
           — Batal = catat nota yang dibatalkan<br>
           — <b style="color:var(--red);">⚠ Stok merah</b> = barang habis, cek dulu ke gudang<br>
           — <b style="color:var(--amber);">% Diskon</b> = harga promo vs retail otomatis tampil<br>
-          — Kolom <b>TIPE</b> hanya aktif untuk kaos kaki &amp; tali sepatu
+          — Kolom <b>TIPE</b> wajib diisi untuk kaos kaki &amp; tali sepatu (size tidak aktif)
         </div>
         <div class="saldo-box">
           <div class="saldo-row">
@@ -693,6 +695,25 @@ let PRODUCTS=[
 ];
 
 // ================================================================
+// HELPERS — produk tipe-wajib (kaos kaki & tali sepatu)
+// ================================================================
+/**
+ * Kembalikan true jika produk termasuk kaos kaki ATAU tali sepatu.
+ * Produk ini: SIZE disabled, harga dari nama produk (bukan size),
+ * tapi subtotal hanya tampil setelah TIPE diisi.
+ */
+function isTipeWajib(nama){
+  if(!nama)return false;
+  const n=nama.toLowerCase();
+  return n.includes('kaos kaki')||n.includes('kaoskaki')||
+         n.includes('kaus kaki')||n.includes('tali sepatu');
+}
+
+// alias lama — masih dipakai syncKaosKaki
+function isTipeAktif(nama){return isTipeWajib(nama);}
+function isKaosKaki(nama){return isTipeWajib(nama);}
+
+// ================================================================
 // HARGA DATA
 // ================================================================
 const HARGA_K='kodachi_v6_harga';
@@ -734,8 +755,14 @@ function getDiskonInfo(nama){
   return{baru:p.h,retail:p.retail,selisih,pct};
 }
 
+/**
+ * Harga produk:
+ * - Kaos kaki / tali sepatu → harga dari nama produk saja (TIDAK ada tambahan size)
+ * - Produk lain → harga dari nama produk + tambahan Rp5.000 untuk size 44/45
+ */
 function getHargaProduk(nama,size){
   const p=PRODUCTS.find(pp=>pp.n===nama);if(!p)return 0;
+  if(isTipeWajib(nama))return p.h; // tidak ada pengaruh size
   let h=p.h;const sn=parseInt(size);
   if(sn===44||sn===45)h+=5000;
   return h;
@@ -918,71 +945,73 @@ function switchTab(tab){
 }
 
 // ================================================================
-// ★ PATCH: isTipeAktif — kaos kaki ATAU tali sepatu
-// ================================================================
-function isTipeAktif(nama){
-  if(!nama)return false;
-  const n=nama.toLowerCase();
-  return n.includes('kaos kaki')||n.includes('kaoskaki')||
-         n.includes('kaus kaki')||n.includes('tali sepatu');
-}
-// Alias — jangan hapus, masih dipakai syncKaosKaki
-function isKaosKaki(nama){return isTipeAktif(nama);}
-
-// Helper: terapkan style disabled/enabled ke input tipe
-function setTipeInputState(tipeEl, aktif){
-  if(!tipeEl)return;
-  if(aktif){
-    tipeEl.removeAttribute('readonly');
-    tipeEl.style.background='';tipeEl.style.cursor='';tipeEl.style.color='';
-    tipeEl.placeholder='tipe...';
-  }else{
-    tipeEl.setAttribute('readonly','true');
-    tipeEl.style.background='#f7f9fc';tipeEl.style.cursor='not-allowed';tipeEl.style.color='var(--txt3)';
-    tipeEl.placeholder='—';
-  }
-}
-
-// ================================================================
-// ITEMS / NOTA
+// RENDER ITEMS
 // ================================================================
 function addItem(){items.push({id:itemCounter++,name:'',detil:'',tipe:'',qty:'',price:0});renderItems();}
 
 function renderItems(){
   const tbody=document.getElementById('itemsBody');tbody.innerHTML='';
   items.forEach((item,idx)=>{
-    const stokVal=item.name?getStok(item.name,item.detil):null;
+    const tipeWajib=isTipeWajib(item.name);
+
+    // Stok hanya relevan untuk produk bukan tipe-wajib (yang punya size)
+    const stokVal=(!tipeWajib&&item.name)?getStok(item.name,item.detil):null;
     const isKosong=stokVal===0;
     const diskon=item.name?getDiskonInfo(item.name):null;
     const tr=document.createElement('tr');if(isKosong)tr.className='stok-warn-row';
-    const sizeKosong=item.name&&item.detil&&stokLoaded&&getStok(item.name,item.detil)===0;
-    const sizeInpClass=sizeKosong?'ii size-inp-warn':'ii';
 
-    // ★ PATCH: kolom tipe — disabled jika bukan kaos kaki/tali sepatu
-    const tipeAktif = isTipeAktif(item.name);
-    const tipeVal = tipeAktif ? esc(item.tipe||'') : '';
-    const tipeStyle = (!tipeAktif && item.name)
-      ? 'text-align:center;font-size:11px;background:#f7f9fc;cursor:not-allowed;color:var(--txt3);'
-      : 'text-align:center;font-size:11px;';
-    const tipeReadonly = (!tipeAktif && item.name) ? 'readonly' : '';
-    const tipePlaceholder = tipeAktif ? 'tipe...' : '—';
+    // SIZE: disabled & kosong untuk kaos kaki / tali sepatu
+    const sizeKosong=(!tipeWajib)&&item.name&&item.detil&&stokLoaded&&getStok(item.name,item.detil)===0;
+    const sizeInpClass=sizeKosong?'ii size-inp-warn':'ii';
+    const sizeReadonly=tipeWajib?'readonly':'';
+    const sizeStyle=tipeWajib
+      ?'text-align:center;background:#f0f2f5;cursor:not-allowed;color:var(--txt3);'
+      :'text-align:center;';
+    const sizePlaceholder=tipeWajib?'—':'size';
+
+    // TIPE: aktif untuk tipe-wajib, disabled untuk yang lain
+    const tipeAktif=tipeWajib;
+    const tipeVal=tipeAktif?esc(item.tipe||''):'';
+    const tipeStyle=(!tipeAktif&&item.name)
+      ?'text-align:center;font-size:11px;background:#f7f9fc;cursor:not-allowed;color:var(--txt3);'
+      :'text-align:center;font-size:11px;';
+    const tipeReadonly=(!tipeAktif&&item.name)?'readonly':'';
+    const tipePlaceholder=tipeAktif?'wajib isi...':'—';
+
+    // SUBTOTAL: untuk tipe-wajib, tampil hanya jika tipe sudah diisi
+    let subTeks='';
+    if(item.name&&item.qty){
+      if(tipeWajib){
+        // harga dari produk, tampil hanya jika tipe terisi
+        subTeks=(item.tipe&&item.tipe.trim())?fmt(item.price*(parseFloat(item.qty)||0)):'';
+      }else{
+        subTeks=item.price>0?fmt(item.price*(parseFloat(item.qty)||0)):'';
+      }
+    }
 
     tr.innerHTML=`<td class="no">${idx+1}</td>
     <td style="padding:0;"><div class="acw"><input class="ii" id="iname-${item.id}" value="${esc(item.name)}" placeholder="${idx===0?'Nama barang...':''}" oninput="filterAC(${item.id},this.value)" onblur="hideAC(${item.id})" autocomplete="off"><div class="acl hidden" id="ac-${item.id}"></div></div>
     ${isKosong?'<span class="stok-warn-badge">⚠ STOK KOSONG!</span>':''}
+    ${tipeWajib&&item.name&&(!item.tipe||!item.tipe.trim())?'<span class="tipe-hint">⚠ Isi tipe dulu</span>':''}
     ${diskon&&item.name?`<div class="diskon-row-info"><span class="diskon-pct">-${diskon.pct}%</span><span>Diskon Rp ${fmt(diskon.selisih)} dari retail Rp ${fmt(diskon.retail)}</span></div>`:''}
     </td>
-    <td style="padding:0;"><div class="size-cell-wrap"><input class="${sizeInpClass}" id="idetil-${item.id}" value="${esc(item.detil)}" oninput="onSizeInput(${item.id},this.value)" style="text-align:center;" placeholder="size">${sizeKosong?`<div class="size-warn-tooltip" id="stip-${item.id}">⚠ SIZE INI KOSONG!</div>`:''}</div></td>
+    <td style="padding:0;"><div class="size-cell-wrap"><input class="${sizeInpClass}" id="idetil-${item.id}" value="${tipeWajib?'':esc(item.detil)}" oninput="onSizeInput(${item.id},this.value)" style="${sizeStyle}" placeholder="${sizePlaceholder}" ${sizeReadonly}>${sizeKosong?`<div class="size-warn-tooltip" id="stip-${item.id}">⚠ SIZE INI KOSONG!</div>`:''}</div></td>
     <td style="padding:0;"><div class="acw" style="position:relative;"><input class="ii" id="itipe-${item.id}" value="${tipeVal}" oninput="filterTipeAC(${item.id},this.value)" onblur="hideTipeAC(${item.id})" style="${tipeStyle}" ${tipeReadonly} placeholder="${tipePlaceholder}"><div class="acl hidden" id="tac-${item.id}" style="min-width:160px;"></div></div></td>
     <td style="padding:0;"><input class="ii" type="number" id="iqty-${item.id}" value="${item.qty}" oninput="updF(${item.id},'qty',this.value)" style="text-align:center;" min="1"></td>
-    <td class="sc" id="isub-${item.id}">${item.name&&item.qty?fmt(item.price*(parseFloat(item.qty)||0)):''}</td>`;
+    <td class="sc" id="isub-${item.id}">${subTeks}</td>`;
     tbody.appendChild(tr);
   });
 }
 
-function onSizeInput(id,val){const item=items.find(i=>i.id===id);if(!item)return;item.detil=val;updF(id,'detil',val);checkStokWarn(id);}
+function onSizeInput(id,val){
+  const item=items.find(i=>i.id===id);if(!item)return;
+  if(isTipeWajib(item.name))return; // size diabaikan untuk tipe-wajib
+  item.detil=val;updF(id,'detil',val);checkStokWarn(id);
+}
+
 function checkStokWarn(id){
   const item=items.find(i=>i.id===id);if(!item)return;
+  if(isTipeWajib(item.name))return; // tidak ada stok size untuk tipe-wajib
   const sizeInp=document.getElementById(`idetil-${id}`);if(!sizeInp)return;
   const tr=sizeInp.closest('tr'),nameTd=tr?tr.cells[1]:null,sizeWrap=sizeInp.closest('.size-cell-wrap');
   let tooltip=document.getElementById(`stip-${id}`);
@@ -996,12 +1025,25 @@ function checkStokWarn(id){
   else{sizeInp.className='ii';sizeInp.style.outline='';if(tr)tr.className='';const badge=tr?tr.querySelector('.stok-warn-badge'):null;if(badge)badge.remove();hideTooltip();}
 }
 
-function updF(id,field,val){const item=items.find(i=>i.id===id);if(!item)return;item[field]=val;const sub=document.getElementById(`isub-${id}`);if(sub)sub.textContent=(item.name&&item.qty)?fmt(item.price*(parseFloat(item.qty)||0)):'';calcAll();}
+function updF(id,field,val){
+  const item=items.find(i=>i.id===id);if(!item)return;
+  item[field]=val;
+  // Untuk tipe-wajib, subtotal hanya tampil jika tipe terisi
+  const sub=document.getElementById(`isub-${id}`);
+  if(sub){
+    if(isTipeWajib(item.name)){
+      sub.textContent=(item.name&&item.qty&&item.tipe&&item.tipe.trim())?fmt(item.price*(parseFloat(item.qty)||0)):'';
+    }else{
+      sub.textContent=(item.name&&item.qty&&item.price>0)?fmt(item.price*(parseFloat(item.qty)||0)):'';
+    }
+  }
+  calcAll();
+}
 
 function filterAC(id,q){
   clearTimeout(acTimers[id]);
   acTimers[id]=setTimeout(()=>{
-    const item=items.find(i=>i.id===id);if(item){item.name=q;item.price=0;}
+    const item=items.find(i=>i.id===id);if(item){item.name=q;item.price=0;item.tipe='';}
     const ac=document.getElementById(`ac-${id}`);
     if(!q.trim()){ac.classList.add('hidden');calcAll();return;}
     const res=PRODUCTS.filter(p=>p.n.toLowerCase().includes(q.toLowerCase())).slice(0,16);
@@ -1019,36 +1061,84 @@ function filterAC(id,q){
 
 function selProd(id,name,price){
   const item=items.find(i=>i.id===id);if(!item)return;
-  item.name=name;item.price=price;
-  const inp=document.getElementById(`iname-${id}`);if(inp)inp.value=name;
+  item.name=name;item.price=price;item.tipe='';item.detil='';
 
-  // ★ PATCH: update kolom tipe aktif/nonaktif sesuai produk yang dipilih
-  const tipeEl=document.getElementById(`itipe-${id}`);
-  if(tipeEl){
-    if(isTipeAktif(name)){
-      setTipeInputState(tipeEl, true);
+  const inp=document.getElementById(`iname-${id}`);if(inp)inp.value=name;
+  const ac=document.getElementById(`ac-${id}`);if(ac)ac.classList.add('hidden');
+
+  // SIZE input: disabled untuk tipe-wajib
+  const sizeEl=document.getElementById(`idetil-${id}`);
+  if(sizeEl){
+    if(isTipeWajib(name)){
+      sizeEl.value='';
+      sizeEl.setAttribute('readonly','true');
+      sizeEl.style.background='#f0f2f5';
+      sizeEl.style.cursor='not-allowed';
+      sizeEl.style.color='var(--txt3)';
+      sizeEl.placeholder='—';
     }else{
-      item.tipe='';tipeEl.value='';
-      setTipeInputState(tipeEl, false);
+      sizeEl.value='';
+      sizeEl.removeAttribute('readonly');
+      sizeEl.style.background='';
+      sizeEl.style.cursor='';
+      sizeEl.style.color='';
+      sizeEl.placeholder='size';
     }
   }
 
-  const sub=document.getElementById(`isub-${id}`);if(sub)sub.textContent=item.qty?fmt(price*(parseFloat(item.qty)||0)):'';
-  const ac=document.getElementById(`ac-${id}`);if(ac)ac.classList.add('hidden');
+  // TIPE input: aktif untuk tipe-wajib, disabled untuk lain
+  const tipeEl=document.getElementById(`itipe-${id}`);
+  if(tipeEl){
+    if(isTipeWajib(name)){
+      tipeEl.value='';
+      tipeEl.removeAttribute('readonly');
+      tipeEl.style.background='';
+      tipeEl.style.cursor='';
+      tipeEl.style.color='';
+      tipeEl.placeholder='wajib isi...';
+    }else{
+      tipeEl.value='';
+      tipeEl.setAttribute('readonly','true');
+      tipeEl.style.background='#f7f9fc';
+      tipeEl.style.cursor='not-allowed';
+      tipeEl.style.color='var(--txt3)';
+      tipeEl.placeholder='—';
+    }
+  }
+
+  // Subtotal belum tampil untuk tipe-wajib (tunggu tipe diisi)
+  const sub=document.getElementById(`isub-${id}`);
+  if(sub)sub.textContent='';
+
   const qel=document.getElementById(`iqty-${id}`);if(qel&&!item.qty){qel.value='1';item.qty=1;}
+
+  // Diskon info
   const nameTd=inp?.closest('tr')?.cells[1];
   if(nameTd){const oldDis=nameTd.querySelector('.diskon-row-info');if(oldDis)oldDis.remove();const dis=getDiskonInfo(name);if(dis){const el=document.createElement('div');el.className='diskon-row-info';el.innerHTML=`<span class="diskon-pct">-${dis.pct}%</span><span>Diskon Rp ${fmt(dis.selisih)} dari retail Rp ${fmt(dis.retail)}</span>`;nameTd.appendChild(el);}}
-  const stokVal=getStok(name,'');
-  if(stokVal===0){toast(`⚠ STOK ${name} KOSONG!`,'t-err');const tr=inp?.closest('tr');if(tr){tr.className='stok-warn-row';const ntd=tr.cells[1];if(ntd&&!ntd.querySelector('.stok-warn-badge')){const b=document.createElement('span');b.className='stok-warn-badge';b.textContent='⚠ STOK KOSONG!';ntd.appendChild(b);}}}
-  else if(stokVal!==null&&stokVal<=3){toast(`⚠ Stok ${name} tinggal ${stokVal}!`,'t-info');}
-  calcAll();if(item.detil)checkStokWarn(item.id);
-  setTimeout(()=>{const sizeEl=document.getElementById(`idetil-${id}`);if(sizeEl)sizeEl.focus();},50);
+
+  // Cek stok hanya untuk non-tipe-wajib
+  if(!isTipeWajib(name)){
+    const stokVal=getStok(name,'');
+    if(stokVal===0){toast(`⚠ STOK ${name} KOSONG!`,'t-err');const tr=inp?.closest('tr');if(tr){tr.className='stok-warn-row';const ntd=tr.cells[1];if(ntd&&!ntd.querySelector('.stok-warn-badge')){const b=document.createElement('span');b.className='stok-warn-badge';b.textContent='⚠ STOK KOSONG!';ntd.appendChild(b);}}}
+    else if(stokVal!==null&&stokVal<=3){toast(`⚠ Stok ${name} tinggal ${stokVal}!`,'t-info');}
+  }
+
+  calcAll();
+
+  // Fokus ke tipe (untuk tipe-wajib) atau size (untuk produk lain)
+  setTimeout(()=>{
+    if(isTipeWajib(name)){
+      const tipeInp=document.getElementById(`itipe-${id}`);if(tipeInp)tipeInp.focus();
+    }else{
+      const sizeInp=document.getElementById(`idetil-${id}`);if(sizeInp)sizeInp.focus();
+    }
+  },50);
 }
 
 function hideAC(id){setTimeout(()=>{const a=document.getElementById(`ac-${id}`);if(a)a.classList.add('hidden');},200);}
 
 // ================================================================
-// KAOS KAKI — tipe autocomplete (kaos kaki & tali sepatu)
+// KAOS KAKI / TALI SEPATU — tipe autocomplete
 // ================================================================
 const KAOSKAKI_K='kodachi_v6_kaoskaki';let kaosKakiTipes=[];let kaosKakiLoaded=false;
 
@@ -1061,22 +1151,44 @@ function filterTipeAC(id,q){
   clearTimeout(tipeAcTimers[id]);tipeAcTimers[id]=setTimeout(()=>{
     const item=items.find(i=>i.id===id);if(item)item.tipe=q;
     const ac=document.getElementById(`tac-${id}`);if(!ac)return;
-    // ★ PATCH: cek isTipeAktif (bukan isKaosKaki)
-    if(!item||!isTipeAktif(item.name)){ac.classList.add('hidden');return;}
+    if(!item||!isTipeWajib(item.name)){ac.classList.add('hidden');return;}
     const candidates=kaosKakiTipes.filter(t=>!q||t.toLowerCase().includes(q.toLowerCase())).slice(0,12);
-    if(!candidates.length){ac.classList.add('hidden');return;}
-    ac.innerHTML=candidates.map(t=>`<div class="aci" onmousedown="selTipe(${id},'${t.replace(/'/g,"\'")}')"><span>${t}</span></div>`).join('');ac.classList.remove('hidden');
+    if(!candidates.length){ac.classList.add('hidden');
+      // Update subtotal saat tipe diketik manual
+      updF(id,'tipe',q);return;}
+    ac.innerHTML=candidates.map(t=>`<div class="aci" onmousedown="selTipe(${id},'${t.replace(/'/g,"\'")}')"><span>${t}</span></div>`).join('');
+    ac.classList.remove('hidden');
+    // Update subtotal real-time saat tipe diketik
+    updF(id,'tipe',q);
   },80);
 }
 
-function selTipe(id,tipe){const item=items.find(i=>i.id===id);if(!item)return;item.tipe=tipe;const inp=document.getElementById(`itipe-${id}`);if(inp)inp.value=tipe;const ac=document.getElementById(`tac-${id}`);if(ac)ac.classList.add('hidden');setTimeout(()=>{const qel=document.getElementById(`iqty-${id}`);if(qel)qel.focus();},50);}
+function selTipe(id,tipe){
+  const item=items.find(i=>i.id===id);if(!item)return;
+  item.tipe=tipe;
+  const inp=document.getElementById(`itipe-${id}`);if(inp)inp.value=tipe;
+  const ac=document.getElementById(`tac-${id}`);if(ac)ac.classList.add('hidden');
+  // Setelah tipe dipilih, tampilkan subtotal
+  updF(id,'tipe',tipe);
+  setTimeout(()=>{const qel=document.getElementById(`iqty-${id}`);if(qel)qel.focus();},50);
+}
 function hideTipeAC(id){setTimeout(()=>{const ac=document.getElementById(`tac-${id}`);if(ac)ac.classList.add('hidden');},200);}
+
 function setPayment(val){currentPayment=val;document.getElementById('payLabel').textContent=val;calcAll();}
 
 function calcAll(){
-  const total=items.reduce((s,i)=>s+(i.price||0)*(parseFloat(i.qty)||0),0);
+  // Untuk tipe-wajib: hitung ke total hanya jika tipe sudah diisi
+  const total=items.reduce((s,i)=>{
+    if(!i.name||!(parseFloat(i.qty)||0))return s;
+    if(isTipeWajib(i.name)&&!(i.tipe&&i.tipe.trim()))return s; // belum isi tipe, tidak ikut total
+    return s+(i.price||0)*(parseFloat(i.qty)||0);
+  },0);
   const uang=parseFloat(document.getElementById('uangBayarInp').value)||0,kem=uang-total;
-  const filled=items.filter(i=>i.name&&(parseFloat(i.qty)||0)>0).length;
+  const filled=items.filter(i=>{
+    if(!i.name||!(parseFloat(i.qty)||0))return false;
+    if(isTipeWajib(i.name))return(i.tipe&&i.tipe.trim()); // tipe-wajib hanya dihitung jika tipe diisi
+    return true;
+  }).length;
   document.getElementById('ttlProduk').textContent=filled;
   document.getElementById('ttlPembayaran').textContent='Rp. '+fmt(total);
   document.getElementById('ttlPayment').textContent='Rp.'+fmt(total);
@@ -1094,14 +1206,17 @@ function calcAll(){
 // ================================================================
 function printNota(){
   const notaId=document.getElementById('notaIdDisplay').textContent,kasir=getKasir(),now=new Date();
+  // Validasi: tipe-wajib harus sudah isi tipe
+  const missingTipe=items.filter(i=>i.name&&(parseFloat(i.qty)||0)>0&&isTipeWajib(i.name)&&!(i.tipe&&i.tipe.trim()));
+  if(missingTipe.length>0){toast(`⚠ Isi TIPE dulu untuk: ${missingTipe.map(i=>i.name).join(', ')}!`,'t-err');return;}
   const filled=items.filter(i=>i.name&&(parseFloat(i.qty)||0)>0);
   if(!filled.length){toast('Tambah minimal 1 barang!','t-err');return;}
-  const kosongItems=filled.filter(i=>{const sv=getStok(i.name,i.detil);return sv===0;});
+  const kosongItems=filled.filter(i=>{if(isTipeWajib(i.name))return false;const sv=getStok(i.name,i.detil);return sv===0;});
   if(kosongItems.length>0){const names=kosongItems.map(i=>i.name+(i.detil?' sz '+i.detil:'')).join(', ');if(!confirm(`⚠ STOK KOSONG:\n${names}\n\nTetap lanjut transaksi?`))return;}
   const total=filled.reduce((s,i)=>s+i.price*(parseFloat(i.qty)||0),0);
   const uangBayar=parseFloat(document.getElementById('uangBayarInp').value)||0,kem=uangBayar-total;
   const mapping=getMapping(),saldoA=parseFloat(document.getElementById('saldoAwal').value)||0,saldoAk=parseFloat(document.getElementById('saldoAkhir').value)||0;
-  const rows=filled.map(i=>({notaId,waktu:now.toISOString(),kasir,payment:currentPayment,produk:i.name,ukuran:i.detil,tipe:i.tipe||'',qty:parseFloat(i.qty)||0,harga:i.price,subtotal:i.price*(parseFloat(i.qty)||0),totalBayar:total,kembalian:kem,type:detectType(i.name),saldoAwal:saldoA,saldoAkhir:saldoAk}));
+  const rows=filled.map(i=>({notaId,waktu:now.toISOString(),kasir,payment:currentPayment,produk:i.name,ukuran:isTipeWajib(i.name)?'':i.detil,tipe:i.tipe||'',qty:parseFloat(i.qty)||0,harga:i.price,subtotal:i.price*(parseFloat(i.qty)||0),totalBayar:total,kembalian:kem,type:detectType(i.name),saldoAwal:saldoA,saldoAkhir:saldoAk}));
   saveLocal({notaId,waktu:now.toISOString(),kasir,payment:currentPayment,rows,total,uangBayar,kembalian:kem,synced:false,ts:now.getTime()});
   kirimKeLogNota(rows,now,notaId,kasir,total,uangBayar,kem,mapping);
   const html=buildPrintHTML(notaId,kasir,now,filled,total,uangBayar,kem);
@@ -1114,7 +1229,11 @@ function getKasir(){const el=document.getElementById('kasirSelect');if(!el)retur
 function buildPrintHTML(notaId,kasir,now,filled,total,uangBayar,kem){
   const tgl=now.toLocaleString('id-ID');
   let html=`<div class="prc"><b>TOKO SEPATU KODACHI</b></div><div class="prc" style="font-size:10px;">Jl. Monjali No. 107, Sleman, DIY</div><div class="prd"></div><div class="prr"><span>${notaId}</span><span>Kasir: ${kasir}</span></div><div style="font-size:10px;color:#888;">${tgl}</div><div class="prd"></div>`;
-  filled.forEach(i=>{html+=`<div class="prr"><span>${i.name}${i.detil?' sz'+i.detil:''}${i.tipe?' ('+i.tipe+')':''} x${i.qty}</span><span>${fmt(i.price*(parseFloat(i.qty)||0))}</span></div>`;});
+  filled.forEach(i=>{
+    const sizeStr=(!isTipeWajib(i.name)&&i.detil)?' sz'+i.detil:'';
+    const tipeStr=i.tipe?' ('+i.tipe+')':'';
+    html+=`<div class="prr"><span>${i.name}${sizeStr}${tipeStr} x${i.qty}</span><span>${fmt(i.price*(parseFloat(i.qty)||0))}</span></div>`;
+  });
   html+=`<div class="prd"></div><div class="prr"><b>TOTAL</b><b>${fmt(total)}</b></div><div class="prr"><span>Payment</span><span>${currentPayment}</span></div>`;
   if(uangBayar){html+=`<div class="prr"><span>Bayar</span><span>${fmt(uangBayar)}</span></div><div class="prr"><span>${kem>=0?'Kembalian':'Kurang'}</span><span>${fmt(Math.abs(kem))}</span></div>`;}
   html+=`<div class="prd"></div><div class="prc" style="font-size:10px;">WWW.SEPATUKODACHI.COM</div><div class="prc" style="font-size:10px;">WA: 0831-0834-3491</div><div class="prc" style="font-size:10px;margin-top:5px;">-- TERIMA KASIH --</div>`;
@@ -1258,13 +1377,11 @@ function hitungBarisPg(id){
   const hinfoEl=document.getElementById(`pg-hinfo-${id}`),subEl=document.getElementById(`pg-sub-${id}`);
   if(nama&&harga>0){
     const p=PRODUCTS.find(pp=>pp.n===nama),retail=p?.retail||0;
-    const sn=parseInt(size),plus=(sn===44||sn===45)?` <span style="color:var(--amber);font-size:9px;">(+5rb size ${size})</span>`:'';
+    const sn=parseInt(size),plus=(!isTipeWajib(nama)&&(sn===44||sn===45))?` <span style="color:var(--amber);font-size:9px;">(+5rb size ${size})</span>`:'';
     const dis=getDiskonInfo(nama),disHtml=dis?`<span class="pg-harga-diskon">-${dis.pct}%</span> `:'';
     const retailHtml=retail>harga?`<span style="color:var(--txt3);text-decoration:line-through;font-size:9px;margin-left:3px;">Rp ${fmt(retail)}</span>`:'';
     if(hinfoEl)hinfoEl.innerHTML=`${disHtml}<span class="pg-harga-grosir">Rp ${fmt(harga)}</span>${retailHtml}${plus}`;
-    const stokSz=size?getStok(nama,size):getStok(nama,'');
-    if(stokSz===0){if(sizeEl){sizeEl.style.background='#fff0f0';sizeEl.style.color='var(--red)';sizeEl.style.fontWeight='700';}toast(`⚠ Stok ${nama} size ${size} KOSONG!`,'t-err');}
-    else{if(sizeEl){sizeEl.style.background='';sizeEl.style.color='';sizeEl.style.fontWeight='';}}
+    if(!isTipeWajib(nama)){const stokSz=size?getStok(nama,size):getStok(nama,'');if(stokSz===0){if(sizeEl){sizeEl.style.background='#fff0f0';sizeEl.style.color='var(--red)';sizeEl.style.fontWeight='700';}toast(`⚠ Stok ${nama} size ${size} KOSONG!`,'t-err');}else{if(sizeEl){sizeEl.style.background='';sizeEl.style.color='';sizeEl.style.fontWeight='';}}}
   }else{if(hinfoEl)hinfoEl.innerHTML='<span style="color:var(--txt3);">—</span>';}
   if(subEl){subEl.textContent=`Rp ${fmt(sub)}`;subEl.dataset.val=sub;}
   hitungSelisihTukar();
@@ -1318,7 +1435,7 @@ async function prosesTukar(){
     let porsiHargaLama;
     if(penggantiData.length===1){porsiHargaLama=totalKembali;}
     else{if(bpIdx===penggantiData.length-1){const sudahDibagi=logRows.filter(r=>r.type==='tukar').reduce((s,r)=>s+(r.subtotal||0),0);porsiHargaLama=totalKembali-sudahDibagi;}else{porsiHargaLama=Math.round(totalKembali*subtotalPg/totalPengganti);}}
-    logRows.push({notaId,waktu:now.toISOString(),kasir,payment:tukarState.metodeBayar||'CASH',produk:bp.nama,ukuran:bp.size,qty:bp.qty,harga,subtotal:porsiHargaLama,totalBayar:totalPengganti,kembalian:Math.abs(selisihFinal),type:'tukar',ket:'Tukar',saldoAwal:0,saldoAkhir:0});
+    logRows.push({notaId,waktu:now.toISOString(),kasir,payment:tukarState.metodeBayar||'CASH',produk:bp.nama,ukuran:isTipeWajib(bp.nama)?'':bp.size,qty:bp.qty,harga,subtotal:porsiHargaLama,totalBayar:totalPengganti,kembalian:Math.abs(selisihFinal),type:'tukar',ket:'Tukar',saldoAwal:0,saldoAkhir:0});
   });
   let ketSelisih='Impas Retur';
   if(selisihFinal>0)ketSelisih='Kekurangan Retur'+(surcharge>0?` (surcharge EDC Non BCA Rp ${fmt(surcharge)})`:'');
