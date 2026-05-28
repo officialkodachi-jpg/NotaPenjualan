@@ -812,10 +812,22 @@ function getStokKey(nama, size){
 
 function getStok(nama, size){
   if(!stokLoaded) return null;
-  const k1 = getStokKey(nama, size);
-  const k2 = (nama||'').trim();
-  if(stokData[k1]!==undefined) return stokData[k1];
-  if(stokData[k2]!==undefined) return stokData[k2];
+  const n = (nama||'').trim();
+  const s = (size||'').trim();
+  if(s) {
+    // Kalau ada size: cari key "nama|size" dulu
+    const k1 = `${n}|${s}`;
+    if(stokData[k1] !== undefined) return stokData[k1];
+    // Cek apakah produk ini punya data per-size sama sekali
+    // Kalau ada key "nama|xxx" tapi tidak ada "nama|size" = size ini = 0
+    const hasSizeData = Object.keys(stokData).some(k => k.startsWith(n + '|'));
+    if(hasSizeData) return 0; // produk ada, size ini tidak ditemukan = habis/tidak ada
+    // Produk tidak punya data per-size, pakai total
+    if(stokData[n] !== undefined) return stokData[n];
+    return null;
+  }
+  // Tanpa size: pakai total produk
+  if(stokData[n] !== undefined) return stokData[n];
   return null;
 }
 
@@ -1101,8 +1113,7 @@ function renderItems(){
     <td style="padding:0;">
       <div class="size-cell-wrap">
         <input class="${sizeInpClass}" id="idetil-${item.id}" value="${esc(item.detil)}" 
-          oninput="updF(${item.id},'detil',this.value);checkStokWarn(${item.id})" 
-          onblur="hideSizeTooltip(${item.id})"
+          oninput="onSizeInput(${item.id},this.value)"
           style="text-align:center;" placeholder="size">
         ${sizeKosong?`<div class="size-warn-tooltip" id="stip-${item.id}">⚠ SIZE INI KOSONG!</div>`:''}
       </div>
@@ -1113,68 +1124,97 @@ function renderItems(){
   });
 }
 
-function checkStokWarn(id){
-  const item=items.find(i=>i.id===id);
-  if(!item)return;
-
-  const sizeInp = document.getElementById(`idetil-${id}`);
-  const nameTd = sizeInp?.closest('tr')?.cells[1];
-
-  // Cek stok total (nama saja, tanpa size)
-  const stokNama = item.name ? getStok(item.name, '') : null;
-  const stokSize = item.name && item.detil ? getStok(item.name, item.detil) : null;
-
-  // Warning row merah kalau nama kosong tanpa memperhatikan size
-  const tr = document.getElementById(`iname-${id}`)?.closest('tr');
-  if(tr) {
-    if(stokNama === 0 && !item.detil) {
-      tr.className='stok-warn-row';
-      if(nameTd && !nameTd.querySelector('.stok-warn-badge')){
-        const b=document.createElement('span');b.className='stok-warn-badge';b.textContent='⚠ STOK KOSONG!';nameTd.appendChild(b);
-      }
-    } else {
-      tr.className='';
-      const badge=tr.querySelector('.stok-warn-badge');if(badge)badge.remove();
-    }
-  }
-
-  // Warning size merah
-  if(!sizeInp)return;
-  const sizeWrap = sizeInp.closest('.size-cell-wrap');
-  let tooltip = document.getElementById(`stip-${id}`);
-
-  if(stokSize === 0 && item.detil) {
-    // Size ini kosong!
-    sizeInp.className = 'ii size-inp-warn';
-    if(!tooltip && sizeWrap) {
-      const t = document.createElement('div');
-      t.className = 'size-warn-tooltip';
-      t.id = `stip-${id}`;
-      t.textContent = `⚠ SIZE ${item.detil} KOSONG!`;
-      sizeWrap.appendChild(t);
-    } else if(tooltip) {
-      tooltip.textContent = `⚠ SIZE ${item.detil} KOSONG!`;
-      tooltip.style.display = '';
-    }
-    if(tr) tr.className = 'stok-warn-row';
-    toast(`⚠ SIZE ${item.detil} untuk ${item.name} KOSONG!`, 't-err');
-  } else if(stokSize !== null && stokSize <= 3 && stokSize > 0 && item.detil) {
-    // Size tipis
-    sizeInp.className = 'ii';
-    sizeInp.style.borderBottom = '2px solid var(--amber)';
-    if(tooltip) tooltip.style.display='none';
-    toast(`⚠ Stok ${item.name} size ${item.detil} tinggal ${stokSize}!`, 't-info');
-  } else {
-    // Normal
-    sizeInp.className = 'ii';
-    sizeInp.style.borderBottom = '';
-    if(tooltip) tooltip.style.display='none';
-  }
+// onSizeInput: update item.detil dulu, BARU cek stok — urutan wajib benar
+function onSizeInput(id, val){
+  const item = items.find(i=>i.id===id);
+  if(!item) return;
+  item.detil = val; // update state dulu
+  updF(id, 'detil', val); // update subtotal dll
+  checkStokWarn(id); // baru cek stok dengan nilai yang sudah updated
 }
 
-function hideSizeTooltip(id){
-  // Tidak sembunyikan langsung agar user masih bisa baca
-  // Tooltip akan hilang saat re-render atau saat stok OK
+function checkStokWarn(id){
+  const item = items.find(i=>i.id===id);
+  if(!item) return;
+
+  const sizeInp = document.getElementById(`idetil-${id}`);
+  if(!sizeInp) return;
+  const tr = sizeInp.closest('tr');
+  const nameTd = tr ? tr.cells[1] : null;
+  const sizeWrap = sizeInp.closest('.size-cell-wrap');
+
+  // Ambil atau buat tooltip element
+  let tooltip = document.getElementById(`stip-${id}`);
+
+  // ── Tidak ada nama produk: reset semua warning
+  if(!item.name) {
+    sizeInp.className = 'ii';
+    sizeInp.style.outline = '';
+    if(tooltip) tooltip.remove();
+    if(tr) tr.className = '';
+    return;
+  }
+
+  // ── Stok per size (menggunakan getStok yang sudah diperbaiki)
+  const stokSize = item.detil ? getStok(item.name, item.detil) : null;
+
+  // ── Stok nama tanpa size (untuk warning nama produk)
+  const stokNama = getStok(item.name, '');
+
+  // ── Handle tooltip size
+  const showTooltip = (msg, warna) => {
+    if(!tooltip) {
+      tooltip = document.createElement('div');
+      tooltip.id = `stip-${id}`;
+      tooltip.className = 'size-warn-tooltip';
+      if(sizeWrap) sizeWrap.appendChild(tooltip);
+    }
+    tooltip.textContent = msg;
+    tooltip.style.background = warna;
+    tooltip.style.display = '';
+    // Auto-hide setelah 4 detik agar tidak mengganggu
+    clearTimeout(tooltip._t);
+    tooltip._t = setTimeout(() => { if(tooltip) tooltip.style.opacity = '0.3'; }, 4000);
+  };
+  const hideTooltip = () => { if(tooltip) { tooltip.style.display = 'none'; } };
+
+  if(item.detil && stokSize === 0) {
+    // ✗ SIZE INI KOSONG
+    sizeInp.className = 'ii size-inp-warn';
+    if(tr) tr.className = 'stok-warn-row';
+    showTooltip(`⚠ SIZE ${item.detil} KOSONG!`, '#c0392b');
+    toast(`⚠ SIZE ${item.detil} untuk "${item.name}" KOSONG!`, 't-err');
+
+  } else if(item.detil && stokSize !== null && stokSize > 0 && stokSize <= 3) {
+    // ⚠ SIZE TIPIS
+    sizeInp.className = 'ii';
+    sizeInp.style.outline = '2px solid var(--amber)';
+    if(tr) tr.className = '';
+    showTooltip(`⚠ Sisa ${stokSize} pcs`, '#d4850a');
+    toast(`⚠ Stok "${item.name}" size ${item.detil} tinggal ${stokSize}!`, 't-info');
+
+  } else if(!item.detil && stokNama === 0) {
+    // Produk tanpa size, total stok 0
+    sizeInp.className = 'ii';
+    sizeInp.style.outline = '';
+    if(tr) tr.className = 'stok-warn-row';
+    if(nameTd && !nameTd.querySelector('.stok-warn-badge')){
+      const b = document.createElement('span');
+      b.className = 'stok-warn-badge';
+      b.textContent = '⚠ STOK KOSONG!';
+      nameTd.appendChild(b);
+    }
+    hideTooltip();
+
+  } else {
+    // ✓ Normal / tidak ada info stok
+    sizeInp.className = 'ii';
+    sizeInp.style.outline = '';
+    if(tr) tr.className = '';
+    const badge = tr ? tr.querySelector('.stok-warn-badge') : null;
+    if(badge) badge.remove();
+    hideTooltip();
+  }
 }
 
 function updF(id,field,val){
@@ -1237,7 +1277,7 @@ function selProd(id,name,price){
     }
   }
 
-  // Cek stok
+  // Cek stok nama (tanpa size)
   const stokVal=getStok(name,'');
   if(stokVal===0){
     toast(`⚠ STOK ${name} KOSONG!`,'t-err');
@@ -1252,6 +1292,9 @@ function selProd(id,name,price){
     toast(`⚠ Stok ${name} tinggal ${stokVal}!`,'t-info');
   }
   calcAll();
+
+  // Kalau sudah ada detil/size sebelumnya, langsung cek stok size-nya
+  if(item.detil) checkStokWarn(item.id);
 
   // Fokus ke input size
   setTimeout(()=>{
